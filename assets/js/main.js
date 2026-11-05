@@ -100,7 +100,7 @@
     '@context': 'https://schema.org',
     '@type': 'HairSalon',
     name: 'Raquel Melo Conceito de Beleza',
-    description: 'Coloração, loiros, morena iluminada, mechas em cabelo cacheado e tratamentos capilares sob medida.',
+    description: 'Todas as cores, dos tons naturais às cores fantasia: coloração, mechas, loiros e tratamentos capilares sob medida.',
     url: abs('./'),
     image: abs('assets/img/raquel-melo-retrato-1000.jpg'),
     logo: abs('apple-touch-icon.png'),
@@ -226,6 +226,201 @@
 
   $$('[data-ano]').forEach((n) => { n.textContent = String(new Date().getFullYear()); });
 
+  /* ---------- Provador de cores (WebGL + detecção de cabelo no aparelho) ---------- */
+
+  const provSec = $('[data-provador]');
+  if (provSec) {
+    provSec.hidden = false;
+    const tela = $('[data-provador-tela]', provSec);
+    const canvas = $('[data-provador-canvas]', provSec);
+    const status = $('[data-provador-status]', provSec);
+    const nomeEl = $('[data-provador-nome]', provSec);
+    const cta = $('[data-provador-cta]', provSec);
+    const divisor = $('[data-provador-divisor]', provSec);
+    const intensidade = $('[data-provador-intensidade]', provSec);
+    const arquivo = $('[data-fonte-arquivo]', provSec);
+    const btnDemo = $('[data-fonte="demo"]', provSec);
+    const btnCamera = $('[data-fonte="camera"]', provSec);
+    const rotuloArquivo = arquivo.closest('.provador-fonte');
+    const marcado = $('.tom[aria-checked="true"]', provSec);
+    const ui = { cor: marcado.dataset.cor, nome: marcado.dataset.nome, tecnica: 'ombre', intens: 0.9, div: 0 };
+    let motor = null;
+    let avisoTimer = 0;
+
+    const aviso = (msg, segundos) => {
+      clearTimeout(avisoTimer);
+      status.textContent = msg || '';
+      if (msg && segundos) avisoTimer = setTimeout(() => { status.textContent = ''; }, segundos * 1000);
+    };
+    const atualizarCta = () => {
+      cta.dataset.wa = 'Olá, Raquel! Testei a cor ' + ui.nome + ' no provador do site e quero agendar uma avaliação.';
+      if (waDigits) cta.href = waUrl(cta.dataset.wa);
+    };
+    const marcarFonte = (nome) => {
+      btnDemo.setAttribute('aria-pressed', String(nome === 'demo'));
+      btnCamera.setAttribute('aria-pressed', String(nome === 'camera'));
+      btnCamera.textContent = nome === 'camera' ? 'Parar câmera' : 'Usar minha câmera';
+      rotuloArquivo.classList.toggle('is-ativa', nome === 'foto');
+    };
+
+    // grupos de opções: clique e setas do teclado
+    const opcoes = (lista, aoEscolher) => {
+      const escolher = (btn, foco) => {
+        lista.forEach((b) => {
+          const on = b === btn;
+          b.setAttribute('aria-checked', String(on));
+          b.tabIndex = on ? 0 : -1;
+        });
+        if (foco) btn.focus();
+        aoEscolher(btn);
+      };
+      lista.forEach((b, i) => {
+        b.addEventListener('click', () => escolher(b, false));
+        b.addEventListener('keydown', (e) => {
+          const d = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+          if (!d) return;
+          e.preventDefault();
+          escolher(lista[(i + d + lista.length) % lista.length], true);
+        });
+      });
+    };
+    opcoes($$('.tom', provSec), (b) => {
+      ui.cor = b.dataset.cor;
+      ui.nome = b.dataset.nome;
+      nomeEl.textContent = ui.nome;
+      atualizarCta();
+      if (motor) motor.cor(ui.cor);
+    });
+    opcoes($$('[data-tecnica]', provSec), (b) => {
+      ui.tecnica = b.dataset.tecnica;
+      if (motor) motor.tecnica(ui.tecnica);
+    });
+    intensidade.addEventListener('input', () => {
+      ui.intens = intensidade.value / 100;
+      if (motor) motor.intensidade(ui.intens);
+    });
+    atualizarCta();
+
+    // antes e depois: arrastar o divisor (mouse, dedo ou setas)
+    const definirDivisor = (v) => {
+      ui.div = clamp(v, 0, 1);
+      tela.style.setProperty('--div', ui.div.toFixed(4));
+      divisor.setAttribute('aria-valuenow', String(Math.round(ui.div * 100)));
+      divisor.setAttribute('aria-valuetext', ui.div < 0.03 ? 'Depois' : Math.round(ui.div * 100) + '% antes');
+      tela.classList.toggle('mostra-antes', ui.div > 0.18);
+      if (motor) motor.divisor(ui.div);
+    };
+    let arrasto = null;
+    const posicao = (e) => {
+      const r = tela.getBoundingClientRect();
+      return (e.clientX - r.left) / r.width;
+    };
+    tela.addEventListener('pointerdown', (e) => {
+      if (e.button > 0) return;
+      arrasto = e.pointerId;
+      try { tela.setPointerCapture(e.pointerId); } catch (_) { /* ignore */ }
+      definirDivisor(posicao(e));
+    });
+    tela.addEventListener('pointermove', (e) => { if (arrasto === e.pointerId) definirDivisor(posicao(e)); });
+    const soltarDivisor = (e) => { if (arrasto === e.pointerId) arrasto = null; };
+    tela.addEventListener('pointerup', soltarDivisor);
+    tela.addEventListener('pointercancel', soltarDivisor);
+    divisor.addEventListener('keydown', (e) => {
+      const passo = { ArrowRight: 0.05, ArrowUp: 0.05, ArrowLeft: -0.05, ArrowDown: -0.05 }[e.key];
+      if (passo === undefined && e.key !== 'Home' && e.key !== 'End') return;
+      e.preventDefault();
+      if (e.key === 'Home') definirDivisor(0);
+      else if (e.key === 'End') definirDivisor(1);
+      else definirDivisor(ui.div + passo);
+    });
+
+    // de onde vem a imagem: foto da Raquel, câmera ou foto enviada
+    btnDemo.addEventListener('click', () => {
+      if (!motor) return;
+      motor.usarDemo();
+      marcarFonte('demo');
+    });
+    btnCamera.addEventListener('click', async () => {
+      if (!motor) return;
+      if (motor.fonte === 'camera') {
+        motor.pararCamera();
+        marcarFonte('demo');
+        return;
+      }
+      try {
+        marcarFonte('camera');
+        await motor.usarCamera();
+        definirDivisor(0);
+      } catch (err) {
+        motor.usarDemo();
+        marcarFonte('demo');
+        aviso(err && err.name === 'NotAllowedError'
+          ? 'A câmera não foi liberada. Você pode testar com uma foto sua.'
+          : 'Não foi possível abrir a câmera aqui. Tente enviar uma foto.', 5);
+      }
+    });
+    arquivo.addEventListener('change', async () => {
+      const f = arquivo.files && arquivo.files[0];
+      arquivo.value = '';
+      if (!f || !motor) return;
+      try {
+        await motor.usarFoto(f);
+        marcarFonte('foto');
+        definirDivisor(0);
+      } catch (_) {
+        aviso('Não consegui abrir essa foto. Tente outra, de preferência de rosto.', 5);
+      }
+    });
+
+    // carrega o motor só quando a seção está chegando; a câmera desliga quando a pessoa sai dela
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver((entries, obs) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        obs.disconnect();
+        import('./3d/provador.js')
+          .then((m) => m.iniciarProvador(canvas, {
+            foto: 'assets/img/provador-raquel.jpg',
+            mascara: 'assets/img/provador-raquel-mascara.png',
+            modelo: new URL('assets/models/hair_segmenter.tflite', document.baseURI).href,
+            onStatus: (msg) => aviso(msg),
+          }))
+          .then((api) => {
+            motor = api;
+            motor.cor(ui.cor);
+            motor.tecnica(ui.tecnica);
+            motor.intensidade(ui.intens);
+            tela.classList.add('is-pronto');
+            definirDivisor(motion ? 1 : 0.4);
+            // revelação: o "depois" entra varrendo a foto quando ela aparece
+            new IntersectionObserver(([e], o) => {
+              if (!e.isIntersecting) return;
+              o.disconnect();
+              if (!motion) return;
+              const inicio = performance.now();
+              const anima = (agora) => {
+                const t = Math.min(1, (agora - inicio) / 1500);
+                const suave = 1 - Math.pow(1 - t, 3);
+                if (arrasto === null) definirDivisor(1 - suave * 0.6);
+                if (t < 1 && arrasto === null) requestAnimationFrame(anima);
+              };
+              requestAnimationFrame(anima);
+            }, { threshold: 0.55 }).observe(tela);
+          })
+          .catch((err) => {
+            console.warn('Provador de cores indisponível.', err && err.message);
+            aviso('Este navegador não consegue abrir o provador. Tente pelo celular ou outro navegador.');
+          });
+      }, { rootMargin: '500px 0px' }).observe(provSec);
+
+      new IntersectionObserver(([e]) => {
+        if (!e.isIntersecting && motor && motor.fonte === 'camera') {
+          motor.pararCamera();
+          marcarFonte('demo');
+        }
+      }).observe(provSec);
+    }
+  }
+
   /* ==========================================================================
      Movimento 3D: tudo que pende balança, com o mouse, o toque e a rolagem
      ========================================================================== */
@@ -236,10 +431,8 @@
   const heroCopy = $('.hero-copy');
   const conceito = $('[data-conceito]');
   const palco = $('[data-conceito-palco]');
-  const mechasSec = $('[data-mechas]');
   const state = { conceitoView: 0.5 };
   let acendeWords = [];
-  let cabelo = null;
   const visiblePendants = new Set();
 
   // Separa um título em palavras; com "inner", cada palavra ganha uma camada que gira em 3D.
@@ -442,12 +635,6 @@
       fig.style.setProperty('--py', (-c * r.height * 0.045).toFixed(1) + 'px');
     });
 
-    // Fios 3D: vento com a rolagem
-    if (cabelo && mechasSec) {
-      const r = mechasSec.getBoundingClientRect();
-      cabelo.rolagem(vy, clamp((vh - r.top) / (r.height + vh), 0, 1));
-    }
-
     // Conceito: progresso da seção para o giro do monograma e para acender a frase
     if (conceito) {
       const r = conceito.getBoundingClientRect();
@@ -468,15 +655,13 @@
   };
 
   if (motion) {
-    if (mechasSec) mechasSec.hidden = false;
-
     // Títulos e frase do conceito
     $$('[data-split]').forEach((h) => splitWords(h, true));
     const frase = $('[data-acende]');
     if (frase) acendeWords = splitWords(frase, false);
 
     // Textos que surgem suavemente, em sequência dentro de cada bloco
-    $$('.split-text > p, .split-text > .btn, .section-head > p, .faq-intro > p, .servicos + .btn, .mechas-texto > .lead, .mechas-status')
+    $$('.split-text > p, .split-text > .btn, .section-head > p, .faq-intro > p, .servicos + .btn, .provador-painel > .lead, .provador-cartela, .provador-escolha, .provador-controles, .provador-cta')
       .forEach((n) => { n.dataset.reveal = 'fade'; });
     const order = new Map();
     $$('[data-reveal="fade"]').forEach((n) => {
@@ -718,38 +903,6 @@
         m.vel = 720;
         mKick();
       }, { threshold: 0.6 }).observe(moeda);
-    }
-
-    /* Faça suas mechas: fios 3D que ficam loiros onde a pessoa passa o mouse ou o dedo */
-    if (mechasSec) {
-      const canvas = $('[data-mechas-canvas]', mechasSec);
-      const pct = $('[data-mechas-pct]', mechasSec);
-      const final = $('[data-mechas-final]', mechasSec);
-      const dica = $('[data-mechas-dica]', mechasSec);
-      if (!finePointer && dica) {
-        dica.textContent = 'Deslize o dedo pelos fios e veja o castanho ganhar luz, do jeito que acontece no salão.';
-      }
-      $('[data-mechas-reset]', mechasSec).addEventListener('click', () => {
-        if (cabelo) cabelo.apagar();
-      });
-      new IntersectionObserver((entries, obs) => {
-        if (!entries.some((e) => e.isIntersecting)) return;
-        obs.disconnect();
-        import('./3d/cabelo3d.js')
-          .then((m) => {
-            cabelo = m.iniciarCabelo(canvas, {
-              leve: !finePointer || window.innerWidth < 700,
-              onLuz: (v) => {
-                pct.textContent = String(v);
-                if (v >= 35 && final.hidden) final.hidden = false;
-              },
-            });
-          })
-          .catch((err) => {
-            console.warn('Fios 3D indisponíveis.', err && err.message);
-            mechasSec.hidden = true;
-          });
-      }, { rootMargin: '900px 0px' }).observe(mechasSec);
     }
 
     /* Monograma 3D: carrega o three.js só quando a seção está chegando */
