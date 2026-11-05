@@ -1,6 +1,6 @@
 /* Monograma RM em ouro 3D (three.js).
-   Fonte do arquivo assets/js/monograma3d.min.js. Para gerar de novo:
-   npx esbuild src/monograma3d.js --bundle --minify --format=esm --target=es2020 --outfile=assets/js/monograma3d.min.js
+   Gerado em assets/js/3d/ pelo esbuild. Para gerar de novo:
+   npx esbuild src/monograma3d.js src/cabelo3d.js --bundle --splitting --minify --format=esm --target=es2020 --outdir=assets/js/3d --chunk-names=three-[hash]
    (com three instalado: npm i three) */
 
 import {
@@ -97,20 +97,69 @@ export async function iniciarMonograma(canvas, { svgUrl, getView }) {
     pointer.ty = (e.clientY / window.innerHeight) * 2 - 1;
   }, { passive: true });
 
+  // Pegar e girar com a mão: continua no embalo e para de frente
+  const TAU = Math.PI * 2;
+  const mao = { ativa: false, id: null, x: 0, y: 0, giro: 0, vel: 0, incl: 0, t: 0 };
+  canvas.addEventListener('pointerdown', (e) => {
+    mao.ativa = true;
+    mao.id = e.pointerId;
+    mao.x = e.clientX;
+    mao.y = e.clientY;
+    mao.t = performance.now();
+    mao.vel = 0;
+    canvas.setPointerCapture(e.pointerId);
+    canvas.classList.add('is-grabbed');
+  });
+  canvas.addEventListener('pointermove', (e) => {
+    if (!mao.ativa || e.pointerId !== mao.id) return;
+    const agora = performance.now();
+    const dt = Math.max(0.008, (agora - mao.t) / 1000);
+    const dx = (e.clientX - mao.x) * 0.012;
+    mao.giro += dx;
+    mao.vel = mao.vel * 0.4 + (dx / dt) * 0.6;
+    mao.incl = Math.max(-0.6, Math.min(0.6, mao.incl + (e.clientY - mao.y) * 0.006));
+    mao.x = e.clientX;
+    mao.y = e.clientY;
+    mao.t = agora;
+  });
+  const soltar = () => {
+    if (!mao.ativa) return;
+    mao.ativa = false;
+    canvas.classList.remove('is-grabbed');
+    if (performance.now() - mao.t > 80) mao.vel = 0;
+  };
+  canvas.addEventListener('pointerup', soltar);
+  canvas.addEventListener('pointercancel', soltar);
+  canvas.addEventListener('lostpointercapture', soltar);
+
   let running = false;
   let raf = 0;
   let turn = (getView() - 0.5) * 2.6;
   const start = performance.now();
+  let last = 0;
 
   const frame = (now) => {
     const t = (now - start) / 1000;
+    const dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60;
+    last = now;
     pointer.x += (pointer.tx - pointer.x) * 0.05;
     pointer.y += (pointer.ty - pointer.y) * 0.05;
+    if (!mao.ativa) {
+      // embalo que vai diminuindo; depois volta para a volta inteira mais próxima (de frente)
+      mao.giro += mao.vel * dt;
+      mao.vel *= Math.pow(0.18, dt);
+      if (Math.abs(mao.vel) < 2.5) {
+        const frente = Math.round(mao.giro / TAU) * TAU;
+        mao.vel += (frente - mao.giro) * 9 * dt;
+        mao.vel *= Math.pow(0.05, dt);
+      }
+      mao.incl *= Math.pow(0.08, dt);
+    }
     // gira com a rolagem: de lado ao entrar, de frente no meio da seção
     const target = (getView() - 0.5) * 2.6;
     turn += (target - turn) * 0.08;
-    group.rotation.y = turn + pointer.x * 0.22 + Math.sin(t * 0.55) * 0.05;
-    group.rotation.x = pointer.y * 0.12 + Math.sin(t * 0.7) * 0.035;
+    group.rotation.y = turn + mao.giro + pointer.x * 0.22 + Math.sin(t * 0.55) * 0.05;
+    group.rotation.x = mao.incl + pointer.y * 0.12 + Math.sin(t * 0.7) * 0.035;
     group.position.y = Math.sin(t * 0.9) * size.y * 0.015;
     renderer.render(scene, camera);
     if (running) raf = requestAnimationFrame(frame);

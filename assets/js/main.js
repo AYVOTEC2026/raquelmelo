@@ -227,7 +227,7 @@
   $$('[data-ano]').forEach((n) => { n.textContent = String(new Date().getFullYear()); });
 
   /* ==========================================================================
-     Movimento 3D
+     Movimento 3D: tudo que pende balança, com o mouse, o toque e a rolagem
      ========================================================================== */
 
   const header = $('[data-header]');
@@ -236,8 +236,10 @@
   const heroCopy = $('.hero-copy');
   const conceito = $('[data-conceito]');
   const palco = $('[data-conceito-palco]');
+  const mechasSec = $('[data-mechas]');
   const state = { conceitoView: 0.5 };
   let acendeWords = [];
+  let cabelo = null;
   const visiblePendants = new Set();
 
   // Separa um título em palavras; com "inner", cada palavra ganha uma camada que gira em 3D.
@@ -261,45 +263,138 @@
     return $$('.w', node);
   };
 
-  /* --- Cartela: mechas com física de mola (balançam com o mouse, o toque e a rolagem) --- */
+  /* --- Pêndulos: cada peça pendurada tem uma mola (ângulos em graus) --- */
 
-  const strands = motion && cartela ? $$('.mecha', cartela).map((node, i, all) => {
-    const fromCenter = Math.abs(i - (all.length - 1) / 2);
-    return { node, az: 0, vz: 0, ax: 0, vx: 0, z: Math.round(-6 - fromCenter * 14), gain: 0.8 + ((i * 7) % 5) / 10 };
-  }) : [];
+  const pendulos = [];
+  const novoPendulo = (node, opcoes) => {
+    const p = {
+      node, ax: 0, ay: 0, az: 0, vx: 0, vy: 0, vz: 0, tx: 0, ty: 0, tz: 0,
+      pego: false, ativo: true, rigidez: 34, atrito: 2.7, maxX: 30, maxZ: 30,
+      rolagem: 0, rolagemZ: 0, ganho: 1, escrever: () => {},
+      ...opcoes,
+    };
+    pendulos.push(p);
+    return p;
+  };
+
   const tilt = { x: 0, y: 0, tx: 0, ty: 0, scroll: 0 };
-  let heroLoop = 0;
-  let heroVisible = true;
-  let lastTime = 0;
-  const STIFF = 34;
-  const DAMP = 2.7;
+  let laco = 0;
+  let ultimoT = 0;
 
-  const heroFrame = (now) => {
-    const dt = lastTime ? Math.min(0.033, (now - lastTime) / 1000) : 0.016;
-    lastTime = now;
-    let energy = 0;
-    strands.forEach((s) => {
-      s.vz += (-STIFF * s.az - DAMP * s.vz) * dt;
-      s.az = clamp(s.az + s.vz * dt, -11, 11);
-      s.vx += (-STIFF * s.ax - DAMP * s.vx) * dt;
-      s.ax = clamp(s.ax + s.vx * dt, -18, 18);
-      energy += Math.abs(s.az) + Math.abs(s.ax) + (Math.abs(s.vz) + Math.abs(s.vx)) * 0.05;
-      s.node.style.transform = `translateZ(${s.z}px) rotateX(${s.ax.toFixed(2)}deg) rotateZ(${s.az.toFixed(2)}deg)`;
-    });
-    tilt.x += (tilt.tx - tilt.x) * 0.08;
-    tilt.y += (tilt.ty - tilt.y) * 0.08;
-    energy += Math.abs(tilt.tx - tilt.x) + Math.abs(tilt.ty - tilt.y);
-    cartela.style.transform =
-      `perspective(1600px) rotateX(${(tilt.y - tilt.scroll).toFixed(2)}deg) rotateY(${tilt.x.toFixed(2)}deg)`;
-    if (energy > 0.02 && heroVisible) {
-      heroLoop = requestAnimationFrame(heroFrame);
+  const passo = (agora) => {
+    const dt = ultimoT ? Math.min(0.033, (agora - ultimoT) / 1000) : 0.016;
+    ultimoT = agora;
+    let energia = 0;
+    for (const p of pendulos) {
+      if (!p.ativo && !p.pego) continue;
+      if (!p.pego) {
+        p.vz += (-p.rigidez * (p.az - p.tz) - p.atrito * p.vz) * dt;
+        p.vx += (-p.rigidez * (p.ax - p.tx) - p.atrito * p.vx) * dt;
+        p.vy += (-p.rigidez * (p.ay - p.ty) - p.atrito * p.vy) * dt;
+        p.az = clamp(p.az + p.vz * dt, -p.maxZ, p.maxZ);
+        p.ax = clamp(p.ax + p.vx * dt, -p.maxX, p.maxX);
+        p.ay = clamp(p.ay + p.vy * dt, -p.maxX, p.maxX);
+      }
+      const e = Math.abs(p.az - p.tz) + Math.abs(p.ax - p.tx) + Math.abs(p.ay - p.ty) +
+        (Math.abs(p.vz) + Math.abs(p.vx) + Math.abs(p.vy)) * 0.05;
+      if (!p.pego && e < 0.01) {
+        p.az = p.tz; p.ax = p.tx; p.ay = p.ty;
+        p.vx = 0; p.vy = 0; p.vz = 0;
+      }
+      energia += p.pego ? 1 : e;
+      p.escrever(p);
+    }
+    if (cartela && motion) {
+      tilt.x += (tilt.tx - tilt.x) * 0.08;
+      tilt.y += (tilt.ty - tilt.y) * 0.08;
+      energia += Math.abs(tilt.tx - tilt.x) + Math.abs(tilt.ty - tilt.y);
+      cartela.style.transform =
+        `perspective(1600px) rotateX(${(tilt.y - tilt.scroll).toFixed(2)}deg) rotateY(${tilt.x.toFixed(2)}deg)`;
+    }
+    if (energia > 0.02) {
+      laco = requestAnimationFrame(passo);
     } else {
-      heroLoop = 0;
-      lastTime = 0;
+      laco = 0;
+      ultimoT = 0;
     }
   };
   const kick = () => {
-    if (!heroLoop && heroVisible && strands.length) heroLoop = requestAnimationFrame(heroFrame);
+    if (!laco) laco = requestAnimationFrame(passo);
+  };
+
+  // Pegar com a mão: arrasta para os lados (balanço) e para cima (vem para a frente, em 3D)
+  const pegavel = (p, { ignorar, limiteZ = 40, limiteX = 32, aoTocar } = {}) => {
+    const node = p.node;
+    node.dataset.pegar = '';
+    p.maxZ = Math.max(p.maxZ, limiteZ);
+    p.maxX = Math.max(p.maxX, limiteX);
+    let id = null;
+    let hx = 0;
+    let hy = 0;
+    let y0 = 0;
+    let ang0 = 0;
+    let az0 = 0;
+    let ax0 = 0;
+    let ultAz = 0;
+    let ultAx = 0;
+    let ultT = 0;
+    let moveu = false;
+    const angulo = (x, y) => (Math.atan2(x - hx, Math.max(24, y - hy)) * -180) / Math.PI;
+
+    node.addEventListener('pointerdown', (e) => {
+      if (e.button > 0 || (ignorar && e.target.closest(ignorar))) return;
+      if (node.matches('[data-reveal="swing"]') && !node.classList.contains('is-done')) return;
+      const r = node.getBoundingClientRect();
+      hx = r.left + r.width / 2;
+      hy = r.top;
+      y0 = e.clientY;
+      ang0 = angulo(e.clientX, e.clientY);
+      az0 = p.az;
+      ax0 = p.ax;
+      ultAz = p.az;
+      ultAx = p.ax;
+      ultT = performance.now();
+      moveu = false;
+      id = e.pointerId;
+      p.pego = true;
+      p.vx = 0;
+      p.vz = 0;
+      try { node.setPointerCapture(id); } catch (_) { /* ignore */ }
+      node.classList.add('is-grabbed');
+      kick();
+    });
+    node.addEventListener('pointermove', (e) => {
+      if (!p.pego || e.pointerId !== id) return;
+      const az = clamp(az0 + angulo(e.clientX, e.clientY) - ang0, -limiteZ, limiteZ);
+      const ax = clamp(ax0 + (y0 - e.clientY) * 0.16, -limiteX, limiteX);
+      const agora = performance.now();
+      const dt = Math.max(0.008, (agora - ultT) / 1000);
+      p.vz = p.vz * 0.3 + ((az - ultAz) / dt) * 0.7;
+      p.vx = p.vx * 0.3 + ((ax - ultAx) / dt) * 0.7;
+      p.az = az;
+      p.ax = ax;
+      ultAz = az;
+      ultAx = ax;
+      ultT = agora;
+      if (Math.abs(az - az0) + Math.abs(ax - ax0) > 1.5) moveu = true;
+    });
+    const soltar = (e) => {
+      if (!p.pego || (e && e.pointerId !== id)) return;
+      p.pego = false;
+      id = null;
+      node.classList.remove('is-grabbed');
+      if (performance.now() - ultT > 90) {
+        p.vz *= 0.2;
+        p.vx *= 0.2;
+      }
+      p.vz = clamp(p.vz, -420, 420);
+      p.vx = clamp(p.vx, -420, 420);
+      if (!moveu && aoTocar) aoTocar(p);
+      kick();
+    };
+    node.addEventListener('pointerup', soltar);
+    node.addEventListener('pointercancel', soltar);
+    node.addEventListener('lostpointercapture', soltar);
   };
 
   /* --- Rolagem: um único laço por quadro --- */
@@ -319,18 +414,22 @@
     const vy = y - lastY;
     lastY = y;
 
-    // Hero: a cartela inclina para trás e as mechas reagem à velocidade da rolagem
-    if (hero && strands.length) {
+    // Hero: a cartela inclina para trás e o texto se afasta
+    if (hero && cartela) {
       const p = clamp(y / hero.offsetHeight, 0, 1);
       tilt.scroll = p * 16;
       heroCopy.style.transform = `translate3d(0, ${(p * 60).toFixed(1)}px, 0)`;
       heroCopy.style.opacity = (1 - p * 0.65).toFixed(3);
-      if (heroVisible && Math.abs(vy) > 0.5) {
-        const v = clamp(vy, -40, 40);
-        strands.forEach((s, i) => {
-          s.vx += v * 0.55 * s.gain;
-          s.vz += v * 0.14 * (i % 2 ? 1 : -1) * s.gain;
-        });
+      kick();
+    }
+
+    // Tudo que pende balança com o embalo da rolagem
+    if (Math.abs(vy) > 0.5) {
+      const v = clamp(vy, -40, 40);
+      for (const p of pendulos) {
+        if (!p.ativo || p.pego || !p.rolagem) continue;
+        p.vx += v * p.rolagem * p.ganho;
+        p.vz += v * p.rolagemZ * p.ganho;
       }
       kick();
     }
@@ -342,6 +441,12 @@
       const c = (r.top + r.height / 2 - vh / 2) / (vh / 2 + r.height / 2);
       fig.style.setProperty('--py', (-c * r.height * 0.045).toFixed(1) + 'px');
     });
+
+    // Fios 3D: vento com a rolagem
+    if (cabelo && mechasSec) {
+      const r = mechasSec.getBoundingClientRect();
+      cabelo.rolagem(vy, clamp((vh - r.top) / (r.height + vh), 0, 1));
+    }
 
     // Conceito: progresso da seção para o giro do monograma e para acender a frase
     if (conceito) {
@@ -363,13 +468,15 @@
   };
 
   if (motion) {
+    if (mechasSec) mechasSec.hidden = false;
+
     // Títulos e frase do conceito
     $$('[data-split]').forEach((h) => splitWords(h, true));
     const frase = $('[data-acende]');
     if (frase) acendeWords = splitWords(frase, false);
 
     // Textos que surgem suavemente, em sequência dentro de cada bloco
-    $$('.split-text > p, .split-text > .btn, .section-head > p, .faq-intro > p, .servicos + .btn')
+    $$('.split-text > p, .split-text > .btn, .section-head > p, .faq-intro > p, .servicos + .btn, .mechas-texto > .lead, .mechas-status')
       .forEach((n) => { n.dataset.reveal = 'fade'; });
     const order = new Map();
     $$('[data-reveal="fade"]').forEach((n) => {
@@ -393,46 +500,38 @@
     }, { rootMargin: '0px 0px -10% 0px', threshold: 0.08 });
     $$('[data-split], [data-reveal]').forEach((n) => reveal.observe(n));
 
-    $$('[data-reveal="swing"]').forEach((fig) => {
-      fig.addEventListener('animationend', (e) => {
-        if (e.target === fig && e.animationName === 'balanco') fig.classList.add('is-done');
-      });
-    });
-
-    const pendantsOnScreen = new IntersectionObserver((entries) => {
-      entries.forEach((e) => (e.isIntersecting ? visiblePendants.add(e.target) : visiblePendants.delete(e.target)));
-      requestFrame();
-    });
-    $$('.pendant').forEach((p) => pendantsOnScreen.observe(p));
-
-    // Fotos inclinam e recebem luz sob o cursor
-    if (finePointer) {
-      $$('.pendant').forEach((fig) => {
-        fig.addEventListener('pointermove', (e) => {
-          if (!fig.classList.contains('is-done')) return;
-          const r = fig.getBoundingClientRect();
-          const nx = ((e.clientX - r.left) / r.width) * 2 - 1;
-          const ny = ((e.clientY - r.top) / r.height) * 2 - 1;
-          fig.style.setProperty('--ry', (nx * 5).toFixed(2) + 'deg');
-          fig.style.setProperty('--rx', (-ny * 3).toFixed(2) + 'deg');
-          fig.style.setProperty('--sx', ((nx + 1) * 50).toFixed(1) + '%');
-          fig.style.setProperty('--sy', ((ny + 1) * 50).toFixed(1) + '%');
-          fig.classList.add('is-hover');
+    /* Mechas do topo: passam o mouse, pegam, puxam e soltam */
+    let strands = [];
+    if (hero && cartela) {
+      strands = $$('.mecha', cartela).map((node, i, all) => {
+        const doCentro = Math.abs(i - (all.length - 1) / 2);
+        const z = Math.round(-6 - doCentro * 14);
+        const p = novoPendulo(node, {
+          z, ganho: 0.8 + ((i * 7) % 5) / 10, rolagem: 0.5, rolagemZ: 0.13 * (i % 2 ? 1 : -1),
+          escrever: (q) => {
+            q.node.style.transform = `translateZ(${q.z}px) rotateX(${q.ax.toFixed(2)}deg) rotateZ(${q.az.toFixed(2)}deg)`;
+          },
         });
-        fig.addEventListener('pointerleave', () => {
-          fig.style.setProperty('--rx', '0deg');
-          fig.style.setProperty('--ry', '0deg');
-          fig.classList.remove('is-hover');
+        pegavel(p, {
+          limiteZ: 45, limiteX: 34,
+          aoTocar: (q) => { q.vz += (Math.random() < 0.5 ? -1 : 1) * 95; q.vx += 40; },
         });
+        return p;
       });
-    }
 
-    // Cartela: o mouse passa pelas mechas e elas balançam; um toque também
-    if (hero && strands.length) {
-      const portrait = $('.cartela-retrato', cartela);
-      if (portrait) portrait.style.transform = 'translateZ(28px)';
+      const retrato = $('.cartela-retrato', cartela);
+      if (retrato) {
+        const p = novoPendulo(retrato, {
+          rigidez: 24, atrito: 3.4, rolagem: 0.12, rolagemZ: 0.03,
+          escrever: (q) => {
+            q.node.style.transform = `translateZ(28px) rotateX(${q.ax.toFixed(2)}deg) rotateZ(${q.az.toFixed(2)}deg)`;
+          },
+        });
+        pegavel(p, { limiteZ: 16, limiteX: 18, aoTocar: (q) => { q.vz += 30; } });
+        strands.push(p);
+      }
+
       let lastX = null;
-
       hero.addEventListener('pointermove', (e) => {
         if (e.pointerType !== 'mouse') return;
         const r = hero.getBoundingClientRect();
@@ -441,13 +540,14 @@
         if (lastX !== null) {
           const dx = e.clientX - lastX;
           strands.forEach((s) => {
+            if (s.pego || s.node.classList.contains('cartela-retrato')) return;
             const sr = s.node.getBoundingClientRect();
             if (e.clientY < sr.top - 10 || e.clientY > sr.bottom + 24) return;
             const reach = sr.width / 2 + 30;
             const d = Math.abs(e.clientX - (sr.left + sr.width / 2));
             if (d > reach) return;
             const lever = clamp((e.clientY - sr.top) / sr.height, 0, 1);
-            s.vz -= dx * 1.5 * (1 - d / reach) * (0.35 + lever) * s.gain;
+            s.vz -= dx * 1.5 * (1 - d / reach) * (0.35 + lever) * s.ganho;
           });
         }
         lastX = e.clientX;
@@ -459,27 +559,206 @@
         lastX = null;
         kick();
       });
-      strands.forEach((s) => {
-        s.node.addEventListener('pointerdown', () => {
-          s.vz += (Math.random() < 0.5 ? -1 : 1) * 95;
-          s.vx += 40;
-          kick();
-        });
-      });
 
       new IntersectionObserver(([e]) => {
-        heroVisible = e.isIntersecting;
+        strands.forEach((s) => { s.ativo = e.isIntersecting; });
         kick();
       }).observe(hero);
     }
 
-    // Monograma 3D: carrega o three.js só quando a seção está chegando
+    /* Fotos: entram balançando; depois dá para pegar, puxar e soltar */
+    $$('.pendant').forEach((fig) => {
+      const p = novoPendulo(fig, {
+        ativo: false, rigidez: 30, atrito: 3, rolagem: 0.2, rolagemZ: 0.04,
+        escrever: (q) => {
+          q.node.style.setProperty('--ax', q.ax.toFixed(2) + 'deg');
+          q.node.style.setProperty('--ay', q.ay.toFixed(2) + 'deg');
+          q.node.style.setProperty('--az', q.az.toFixed(2) + 'deg');
+        },
+      });
+      let visivel = false;
+      let pronto = false;
+      const atualizar = () => { p.ativo = visivel && pronto; kick(); };
+      fig.addEventListener('animationend', (e) => {
+        if (e.target === fig && e.animationName === 'balanco') {
+          fig.classList.add('is-done');
+          pronto = true;
+          atualizar();
+        }
+      });
+      new IntersectionObserver(([e]) => {
+        visivel = e.isIntersecting;
+        if (visivel) visiblePendants.add(fig);
+        else visiblePendants.delete(fig);
+        atualizar();
+        requestFrame();
+      }).observe(fig);
+      $$('img', fig).forEach((img) => img.setAttribute('draggable', 'false'));
+      pegavel(p, {
+        ignorar: '.video-toggle', limiteZ: 26, limiteX: 26,
+        aoTocar: (q) => { q.vz += (Math.random() < 0.5 ? -1 : 1) * 60; },
+      });
+
+      if (finePointer) {
+        fig.addEventListener('pointermove', (e) => {
+          if (p.pego || !fig.classList.contains('is-done')) return;
+          const r = fig.getBoundingClientRect();
+          const nx = ((e.clientX - r.left) / r.width) * 2 - 1;
+          const ny = ((e.clientY - r.top) / r.height) * 2 - 1;
+          p.ty = nx * 6;
+          p.tx = -ny * 4;
+          fig.style.setProperty('--sx', ((nx + 1) * 50).toFixed(1) + '%');
+          fig.style.setProperty('--sy', ((ny + 1) * 50).toFixed(1) + '%');
+          fig.classList.add('is-hover');
+          kick();
+        });
+        fig.addEventListener('pointerleave', () => {
+          p.tx = 0;
+          p.ty = 0;
+          fig.classList.remove('is-hover');
+          kick();
+        });
+      }
+    });
+
+    /* Serviços e etapas: balançam como etiquetas quando o mouse passa */
+    $$('.servicos > .servico, .passos > .passo').forEach((row) => {
+      const p = novoPendulo(row, {
+        ativo: false, rigidez: 70, atrito: 6, maxX: 24,
+        escrever: (q) => q.node.style.setProperty('--ax', q.ax.toFixed(2) + 'deg'),
+      });
+      row.addEventListener('animationend', (e) => {
+        if (e.target === row && e.animationName === 'aba') {
+          row.classList.add('is-done');
+          p.ativo = true;
+        }
+      });
+      if (finePointer) {
+        row.addEventListener('pointerenter', () => {
+          if (!p.ativo) return;
+          p.vx -= 75;
+          kick();
+        });
+      }
+    });
+
+    /* Moeda do rodapé: gira com a mão e para mostrando uma das faces */
+    const moeda = $('[data-moeda]');
+    if (moeda) {
+      moeda.dataset.pegar = '';
+      // passo: 180 para parar em qualquer face; 360 para parar sempre de frente (selo)
+      const m = { ang: 0, vel: 0, pego: false, id: null, x: 0, t: 0, moveu: false, passo: 180 };
+      let mLaco = 0;
+      let mUlt = 0;
+      const mPasso = (agora) => {
+        const dt = mUlt ? Math.min(0.033, (agora - mUlt) / 1000) : 0.016;
+        mUlt = agora;
+        if (!m.pego) {
+          m.ang += m.vel * dt;
+          m.vel *= Math.pow(0.4, dt);
+          if (Math.abs(m.vel) < 160) {
+            const face = Math.round(m.ang / m.passo) * m.passo;
+            m.vel += (face - m.ang) * 30 * dt;
+            m.vel *= Math.pow(0.02, dt);
+          }
+        }
+        moeda.style.setProperty('--giro-moeda', m.ang.toFixed(2) + 'deg');
+        const face = Math.round(m.ang / m.passo) * m.passo;
+        if (!m.pego && Math.abs(m.vel) < 0.5 && Math.abs(m.ang - face) < 0.3) {
+          m.ang = face;
+          m.vel = 0;
+          moeda.style.setProperty('--giro-moeda', face + 'deg');
+          mLaco = 0;
+          mUlt = 0;
+        } else {
+          mLaco = requestAnimationFrame(mPasso);
+        }
+      };
+      const mKick = () => { if (!mLaco) mLaco = requestAnimationFrame(mPasso); };
+      moeda.addEventListener('pointerdown', (e) => {
+        if (e.button > 0) return;
+        m.pego = true;
+        m.passo = 180;
+        m.id = e.pointerId;
+        m.x = e.clientX;
+        m.t = performance.now();
+        m.vel = 0;
+        m.moveu = false;
+        try { moeda.setPointerCapture(e.pointerId); } catch (_) { /* ignore */ }
+        moeda.classList.add('is-grabbed');
+        mKick();
+      });
+      moeda.addEventListener('pointermove', (e) => {
+        if (!m.pego || e.pointerId !== m.id) return;
+        const agora = performance.now();
+        const dt = Math.max(0.008, (agora - m.t) / 1000);
+        const d = (e.clientX - m.x) * 1.1;
+        m.ang += d;
+        m.vel = m.vel * 0.3 + (d / dt) * 0.7;
+        m.x = e.clientX;
+        m.t = agora;
+        if (Math.abs(d) > 1) m.moveu = true;
+      });
+      const mSoltar = (e) => {
+        if (!m.pego || (e && e.pointerId !== m.id)) return;
+        m.pego = false;
+        moeda.classList.remove('is-grabbed');
+        if (!m.moveu) m.vel = 900;
+        else if (performance.now() - m.t > 90) m.vel *= 0.2;
+        mKick();
+      };
+      moeda.addEventListener('pointerup', mSoltar);
+      moeda.addEventListener('pointercancel', mSoltar);
+      moeda.addEventListener('lostpointercapture', mSoltar);
+      // dá uma volta quando aparece pela primeira vez
+      new IntersectionObserver(([e], obs) => {
+        if (!e.isIntersecting) return;
+        obs.disconnect();
+        m.passo = 360;
+        m.vel = 720;
+        mKick();
+      }, { threshold: 0.6 }).observe(moeda);
+    }
+
+    /* Faça suas mechas: fios 3D que ficam loiros onde a pessoa passa o mouse ou o dedo */
+    if (mechasSec) {
+      const canvas = $('[data-mechas-canvas]', mechasSec);
+      const pct = $('[data-mechas-pct]', mechasSec);
+      const final = $('[data-mechas-final]', mechasSec);
+      const dica = $('[data-mechas-dica]', mechasSec);
+      if (!finePointer && dica) {
+        dica.textContent = 'Deslize o dedo pelos fios e veja o castanho ganhar luz, do jeito que acontece no salão.';
+      }
+      $('[data-mechas-reset]', mechasSec).addEventListener('click', () => {
+        if (cabelo) cabelo.apagar();
+      });
+      new IntersectionObserver((entries, obs) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        obs.disconnect();
+        import('./3d/cabelo3d.js')
+          .then((m) => {
+            cabelo = m.iniciarCabelo(canvas, {
+              leve: !finePointer || window.innerWidth < 700,
+              onLuz: (v) => {
+                pct.textContent = String(v);
+                if (v >= 35 && final.hidden) final.hidden = false;
+              },
+            });
+          })
+          .catch((err) => {
+            console.warn('Fios 3D indisponíveis.', err && err.message);
+            mechasSec.hidden = true;
+          });
+      }, { rootMargin: '900px 0px' }).observe(mechasSec);
+    }
+
+    /* Monograma 3D: carrega o three.js só quando a seção está chegando */
     if (conceito && palco) {
       const canvas = $('[data-monograma3d]', palco);
       new IntersectionObserver((entries, obs) => {
         if (!entries.some((e) => e.isIntersecting)) return;
         obs.disconnect();
-        import('./monograma3d.min.js')
+        import('./3d/monograma3d.js')
           .then((m) => m.iniciarMonograma(canvas, {
             svgUrl: 'assets/img/logo-monogram.svg',
             getView: () => state.conceitoView,

@@ -180,6 +180,31 @@
       </div>
     </section>
 
+    <!-- ============================== Faça suas mechas (interativo 3D) ============================== -->
+    <section class="mechas-interativas" id="experimente" aria-labelledby="experimente-title" data-mechas hidden>
+      <div class="container mechas-grid">
+        <div class="mechas-texto">
+          <h2 id="experimente-title" data-split>Faça suas mechas</h2>
+          <p class="lead" data-mechas-dica>Passe o mouse pelos fios e veja o castanho ganhar luz, do jeito que acontece no salão.</p>
+          <div class="mechas-status">
+            <p class="mechas-medidor" aria-hidden="true"><span data-mechas-pct>0</span>% iluminado</p>
+            <button class="mechas-reset" type="button" data-mechas-reset>Voltar ao castanho</button>
+          </div>
+          <div class="mechas-final" data-mechas-final hidden>
+            <p>Ficou lindo. No salão, a Raquel faz isso no seu cabelo, sob medida.</p>
+            <a class="btn btn-bronze" href="#contato" data-wa="Olá, Raquel! Fiz mechas no seu site e quero agendar uma avaliação.">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-whatsapp"></use></svg>
+              Agendar uma avaliação
+            </a>
+          </div>
+        </div>
+        <div class="mechas-palco">
+          <canvas class="mechas-canvas" data-mechas-canvas role="img"
+                  aria-label="Fios de cabelo castanhos que ficam loiros onde você passa o mouse ou o dedo"></canvas>
+        </div>
+      </div>
+    </section>
+
     <!-- ============================== Serviços ============================== -->
     <section class="section section-light" id="servicos" aria-labelledby="servicos-title">
       <div class="container">
@@ -358,7 +383,10 @@
   <footer class="site-footer">
     <div class="container footer-grid">
       <div class="footer-marca">
-        <img class="footer-seal" src="assets/img/logo-seal-light.svg" alt="Raquel Melo Conceito de Beleza" width="132" height="132" loading="lazy">
+        <div class="moeda" data-moeda>
+          <img class="moeda-face" src="assets/img/logo-seal-light.svg" alt="Raquel Melo Conceito de Beleza" width="132" height="132" loading="lazy" draggable="false">
+          <span class="moeda-verso" aria-hidden="true"><img src="assets/img/logo-monogram-light.svg" alt="" width="114" height="101" loading="lazy" draggable="false"></span>
+        </div>
         <p>Coloração, mechas e tratamentos capilares feitos sob medida.</p>
       </div>
       <nav class="footer-nav" aria-label="Rodapé">

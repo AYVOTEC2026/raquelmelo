@@ -33,9 +33,9 @@ index.html                    página única (textos e seções)
 assets/css/style.css          visual (cores e fontes no topo do arquivo)
 assets/fonts/                 Bodoni Moda e Jost, hospedadas no próprio site
 assets/js/config.js           dados de contato
-assets/js/main.js             menu, vídeo, WhatsApp e animações
-assets/js/monograma3d.min.js  monograma RM em ouro 3D (three.js, carregado só perto da seção)
-src/monograma3d.js            código-fonte do monograma 3D
+assets/js/main.js             menu, vídeo, WhatsApp, animações e física dos pêndulos
+assets/js/3d/                 módulos 3D gerados (monograma, fios e o three.js compartilhado)
+src/                          código-fonte dos módulos 3D (monograma3d.js e cabelo3d.js)
 assets/img/                   fotos (AVIF, WebP e JPEG em 3 tamanhos) e logos em SVG
 assets/video/                 vídeo dos cachos iluminados (H.264, sem áudio)
 og-image.jpg                  imagem que aparece ao compartilhar o link
@@ -43,14 +43,16 @@ og-image.jpg                  imagem que aparece ao compartilhar o link
 
 ## Animações
 
-- Todo o movimento segue a ideia da cartela: as mechas do topo balançam com o mouse, o toque e a rolagem; as fotos e os itens das listas entram balançando, presos pelo topo; os títulos se levantam em 3D.
-- A seção "Conceito" mostra o monograma em ouro 3D (WebGL), que gira conforme a rolagem enquanto a frase acende.
-- Quem ativa "reduzir movimento" no celular ou no computador vê o site estático, sem baixar o 3D.
-- Para alterar o monograma 3D, edite `src/monograma3d.js` e gere o arquivo final:
+- Todo o movimento segue a ideia da cartela: tudo pende de um fio e balança. As mechas do topo, as fotos e o retrato podem ser pegos com o mouse ou o dedo, puxados e soltos; também balançam com o embalo da rolagem.
+- "Faça suas mechas": cortina de fios 3D com física de cabelo. Onde o mouse ou o dedo passa, o castanho vira loiro (o cursor vira um pincel); ao iluminar 35% aparece o convite para agendar.
+- "Conceito": o monograma em ouro 3D gira com a rolagem e também com a mão, e a frase acende palavra por palavra.
+- O selo do rodapé é uma moeda que gira com a mão.
+- Quem ativa "reduzir movimento" no celular ou no computador vê o site estático, sem baixar o 3D (a seção dos fios fica escondida).
+- Para alterar os módulos 3D, edite os arquivos em `src/` e gere os finais:
 
 ```bash
 npm i three esbuild
-npx esbuild src/monograma3d.js --bundle --minify --format=esm --target=es2020 --outfile=assets/js/monograma3d.min.js
+npx esbuild src/monograma3d.js src/cabelo3d.js --bundle --splitting --minify --format=esm --target=es2020 --outdir=assets/js/3d --chunk-names=three-[hash]
 ```
 
 ## Trocar ou adicionar fotos
