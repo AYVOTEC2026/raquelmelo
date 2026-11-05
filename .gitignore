@@ -1,0 +1,6 @@
+# Material bruto da cliente (fotos e vídeo originais, manual da marca)
+midia/
+
+# Sistema
+.DS_Store
+node_modules/
