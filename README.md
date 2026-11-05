@@ -28,14 +28,29 @@ git push
 ## Estrutura
 
 ```
-index.html                 página única (textos e seções)
-404.html                   página de erro
-assets/css/style.css       visual (cores e fontes no topo do arquivo)
-assets/js/config.js        dados de contato
-assets/js/main.js          menu, vídeo, botões de WhatsApp
-assets/img/                fotos (AVIF, WebP e JPEG em 3 tamanhos) e logos em SVG
-assets/video/              vídeo dos cachos iluminados (H.264, sem áudio)
-og-image.jpg               imagem que aparece ao compartilhar o link
+index.html                    página única (textos e seções)
+404.html                      página de erro
+assets/css/style.css          visual (cores e fontes no topo do arquivo)
+assets/fonts/                 Bodoni Moda e Jost, hospedadas no próprio site
+assets/js/config.js           dados de contato
+assets/js/main.js             menu, vídeo, WhatsApp e animações
+assets/js/monograma3d.min.js  monograma RM em ouro 3D (three.js, carregado só perto da seção)
+src/monograma3d.js            código-fonte do monograma 3D
+assets/img/                   fotos (AVIF, WebP e JPEG em 3 tamanhos) e logos em SVG
+assets/video/                 vídeo dos cachos iluminados (H.264, sem áudio)
+og-image.jpg                  imagem que aparece ao compartilhar o link
+```
+
+## Animações
+
+- Todo o movimento segue a ideia da cartela: as mechas do topo balançam com o mouse, o toque e a rolagem; as fotos e os itens das listas entram balançando, presos pelo topo; os títulos se levantam em 3D.
+- A seção "Conceito" mostra o monograma em ouro 3D (WebGL), que gira conforme a rolagem enquanto a frase acende.
+- Quem ativa "reduzir movimento" no celular ou no computador vê o site estático, sem baixar o 3D.
+- Para alterar o monograma 3D, edite `src/monograma3d.js` e gere o arquivo final:
+
+```bash
+npm i three esbuild
+npx esbuild src/monograma3d.js --bundle --minify --format=esm --target=es2020 --outfile=assets/js/monograma3d.min.js
 ```
 
 ## Trocar ou adicionar fotos

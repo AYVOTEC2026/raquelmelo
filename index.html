@@ -24,14 +24,23 @@
   <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400..600&family=Jost:wght@300..500&display=swap">
+  <link rel="preload" href="assets/fonts/bodoni-moda-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/jost-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" as="image" type="image/avif"
         imagesrcset="assets/img/raquel-melo-retrato-400.avif 400w, assets/img/raquel-melo-retrato-700.avif 700w, assets/img/raquel-melo-retrato-1000.avif 1000w"
         imagesizes="(min-width: 900px) 390px, 48vw" fetchpriority="high">
   <link rel="stylesheet" href="assets/css/style.css">
 
+  <script>
+    /* Ativa as animações de rolagem só quando o navegador suporta e a pessoa não pediu menos movimento.
+       Se o main.js não carregar em 4 s, o conteúdo aparece normalmente. */
+    (function (d) {
+      if (!('IntersectionObserver' in window) || !window.matchMedia ||
+          !matchMedia('(prefers-reduced-motion: no-preference)').matches) return;
+      d.documentElement.classList.add('anim');
+      setTimeout(function () { if (!window.__animPronta) d.documentElement.classList.remove('anim'); }, 4000);
+    })(document);
+  </script>
   <script src="assets/js/config.js" defer></script>
   <script src="assets/js/main.js" defer></script>
 </head>
@@ -122,7 +131,7 @@
     <!-- ============================== Sobre ============================== -->
     <section class="section section-light" id="sobre" aria-labelledby="sobre-title">
       <div class="container split split-photo-first">
-        <figure class="pendant pendant-2x3">
+        <figure class="pendant pendant-2x3" data-reveal="swing">
           <picture>
             <source type="image/avif" sizes="(min-width: 900px) 460px, 84vw"
                     srcset="assets/img/raquel-melo-colorista-500.avif 500w, assets/img/raquel-melo-colorista-800.avif 800w, assets/img/raquel-melo-colorista-1100.avif 1100w">
@@ -136,11 +145,10 @@
         </figure>
 
         <div class="split-text">
-          <h2 id="sobre-title">Prazer, eu sou a Raquel.</h2>
+          <h2 id="sobre-title" data-split>Prazer, eu sou a Raquel.</h2>
           <p class="lead">Sou cabeleireira e colorista. Para mim, a cor certa não é a da moda: é a que conversa com o seu tom de pele, com a sua rotina e com a saúde do seu cabelo.</p>
           <p>Por isso, cada atendimento começa com uma conversa. Entendo o que você deseja, avalio o histórico dos seus fios e só então escolho a técnica, seja um loiro luminoso, uma morena iluminada ou mechas em cachos.</p>
-          <p>Esse é o Conceito de Beleza: cor sob medida, feita com técnica, calma e atenção a cada detalhe.</p>
-          <img class="assinatura" src="assets/img/logo-monogram.svg" alt="" width="114" height="101" loading="lazy">
+          <img class="sobre-monograma" src="assets/img/logo-monogram.svg" alt="" width="114" height="101" loading="lazy">
         </div>
       </div>
     </section>
@@ -149,7 +157,7 @@
     <section class="section section-dark" id="resultados" aria-labelledby="resultados-title">
       <div class="container split split-media-last">
         <div class="split-text">
-          <h2 id="resultados-title">Mechas em cabelo cacheado</h2>
+          <h2 id="resultados-title" data-split>Mechas em cabelo cacheado</h2>
           <p class="lead">Um atendimento real, no salão: a luz entra sem desmanchar a curvatura, e os cachos ganham brilho e definição do comprimento às pontas.</p>
           <p>Cada mecha é pensada para o desenho natural do seu cacho, para que o loiro cresça bonito e a manutenção seja tranquila.</p>
           <a class="btn btn-gold" href="#contato" data-wa="Olá, Raquel! Vi o vídeo dos cachos iluminados no site e gostaria de agendar uma avaliação.">
@@ -158,7 +166,7 @@
           </a>
         </div>
 
-        <figure class="pendant pendant-video">
+        <figure class="pendant pendant-video" data-reveal="swing">
           <video data-video muted loop playsinline preload="none"
                  poster="assets/img/cachos-iluminados-poster.jpg" width="720" height="1280"
                  aria-label="Vídeo: Raquel Melo ajeita os cachos iluminados de uma cliente no salão">
@@ -176,11 +184,11 @@
     <section class="section section-light" id="servicos" aria-labelledby="servicos-title">
       <div class="container">
         <div class="section-head">
-          <h2 id="servicos-title">Serviços</h2>
+          <h2 id="servicos-title" data-split>Serviços</h2>
           <p>O valor de cada serviço depende do comprimento, do volume e da técnica escolhida. Peça seu orçamento pelo WhatsApp.</p>
         </div>
 
-        <ul class="servicos" role="list">
+        <ul class="servicos" role="list" data-reveal="cascade">
           <li class="servico">
             <h3>Loiros</h3>
             <p>Do mel ao platinado, com tonalização pensada para o seu tom de pele.</p>
@@ -214,12 +222,26 @@
       </div>
     </section>
 
+    <!-- ============================== Conceito (monograma 3D) ============================== -->
+    <section class="conceito" id="conceito" aria-labelledby="conceito-title" data-conceito>
+      <div class="conceito-pin">
+        <div class="conceito-palco" data-conceito-palco aria-hidden="true">
+          <img class="conceito-fallback" src="assets/img/logo-monogram-light.svg" alt="" width="114" height="101" loading="lazy">
+          <canvas class="conceito-canvas" data-monograma3d></canvas>
+        </div>
+        <div class="container conceito-texto">
+          <h2 class="conceito-frase" id="conceito-title" data-acende>Cor sob medida, feita com técnica, calma e atenção a cada detalhe.</h2>
+          <img class="conceito-tagline" src="assets/img/logo-tagline-light.svg" alt="Conceito de Beleza" width="240" height="14" loading="lazy">
+        </div>
+      </div>
+    </section>
+
     <!-- ============================== Atendimento ============================== -->
     <section class="section section-champagne" id="atendimento" aria-labelledby="atendimento-title">
       <div class="container split split-media-last">
         <div class="split-text">
-          <h2 id="atendimento-title">Como funciona o atendimento</h2>
-          <ol class="passos">
+          <h2 id="atendimento-title" data-split>Como funciona o atendimento</h2>
+          <ol class="passos" data-reveal="cascade">
             <li class="passo">
               <h3>Agendamento</h3>
               <p>Você chama no WhatsApp, conta o que deseja e escolhe o melhor horário.</p>
@@ -239,7 +261,7 @@
           </ol>
         </div>
 
-        <figure class="pendant pendant-2x3">
+        <figure class="pendant pendant-2x3" data-reveal="swing">
           <picture>
             <source type="image/avif" sizes="(min-width: 900px) 460px, 84vw"
                     srcset="assets/img/raquel-melo-salao-500.avif 500w, assets/img/raquel-melo-salao-800.avif 800w, assets/img/raquel-melo-salao-1100.avif 1100w">
@@ -258,11 +280,11 @@
     <section class="section section-light" id="perguntas" aria-labelledby="perguntas-title">
       <div class="container faq">
         <div class="faq-intro">
-          <h2 id="perguntas-title">Perguntas frequentes</h2>
+          <h2 id="perguntas-title" data-split>Perguntas frequentes</h2>
           <p>Não encontrou sua dúvida? <a href="#contato" data-wa="Olá, Raquel! Tenho uma dúvida sobre os serviços.">Pergunte pelo WhatsApp</a>.</p>
         </div>
 
-        <div class="faq-list">
+        <div class="faq-list" data-reveal="cascade">
           <details class="faq-item">
             <summary>Como faço para agendar?</summary>
             <div class="faq-answer">
@@ -301,14 +323,14 @@
     <section class="section section-dark" id="contato" aria-labelledby="contato-title">
       <div class="container split split-media-last">
         <div class="split-text">
-          <h2 id="contato-title">Agende seu horário</h2>
+          <h2 id="contato-title" data-split>Agende seu horário</h2>
           <p class="lead">Atendimento com hora marcada. Chame no WhatsApp e conte o que você deseja.</p>
           <a class="btn btn-gold" href="#contato" data-wa="Olá, Raquel! Vim pelo site e gostaria de agendar um horário." data-contato-cta hidden>
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-whatsapp"></use></svg>
             Agendar pelo WhatsApp
           </a>
 
-          <dl class="contato-lista">
+          <dl class="contato-lista" data-reveal="cascade">
             <div class="contato-item" data-contato="whatsapp" hidden><dt>WhatsApp</dt><dd></dd></div>
             <div class="contato-item" data-contato="instagram" hidden><dt>Instagram</dt><dd></dd></div>
             <div class="contato-item" data-contato="endereco" hidden><dt>Endereço</dt><dd></dd></div>
@@ -317,7 +339,7 @@
           <p class="contato-pendente" data-contato-pendente hidden>WhatsApp, endereço e horários serão publicados aqui em breve.</p>
         </div>
 
-        <figure class="pendant pendant-3x5">
+        <figure class="pendant pendant-3x5" data-reveal="swing">
           <picture>
             <source type="image/avif" sizes="(min-width: 900px) 420px, 84vw"
                     srcset="assets/img/raquel-melo-pb-500.avif 500w, assets/img/raquel-melo-pb-800.avif 800w, assets/img/raquel-melo-pb-1100.avif 1100w">
@@ -334,16 +356,32 @@
   </main>
 
   <footer class="site-footer">
-    <div class="container">
-      <img class="footer-seal" src="assets/img/logo-seal-light.svg" alt="Raquel Melo Conceito de Beleza" width="132" height="132" loading="lazy">
+    <div class="container footer-grid">
+      <div class="footer-marca">
+        <img class="footer-seal" src="assets/img/logo-seal-light.svg" alt="Raquel Melo Conceito de Beleza" width="132" height="132" loading="lazy">
+        <p>Coloração, mechas e tratamentos capilares feitos sob medida.</p>
+      </div>
       <nav class="footer-nav" aria-label="Rodapé">
-        <a href="#sobre">Sobre</a>
-        <a href="#servicos">Serviços</a>
-        <a href="#perguntas">Perguntas frequentes</a>
-        <a href="#contato">Contato</a>
-        <a href="#" data-footer-instagram hidden>Instagram</a>
+        <ul>
+          <li><a href="#sobre">Sobre</a></li>
+          <li><a href="#resultados">Resultados</a></li>
+          <li><a href="#servicos">Serviços</a></li>
+          <li><a href="#atendimento">Atendimento</a></li>
+          <li><a href="#perguntas">Perguntas frequentes</a></li>
+          <li><a href="#contato">Contato</a></li>
+        </ul>
       </nav>
-      <p class="footer-copy">© <span data-ano>2026</span> Raquel Melo Conceito de Beleza. Todos os direitos reservados.</p>
+      <div class="footer-acao">
+        <a class="btn btn-outline" href="#contato" data-wa="Olá, Raquel! Vim pelo site e gostaria de agendar um horário.">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-whatsapp"></use></svg>
+          Agendar pelo WhatsApp
+        </a>
+        <a class="footer-link" href="#" data-footer-instagram hidden>Instagram</a>
+      </div>
+    </div>
+    <div class="container footer-base">
+      <p>© <span data-ano>2026</span> Raquel Melo Conceito de Beleza. Todos os direitos reservados.</p>
+      <a class="footer-link" href="#inicio">Voltar ao topo</a>
     </div>
   </footer>
 
