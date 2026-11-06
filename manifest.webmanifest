@@ -1,14 +1,14 @@
 {
   "name": "Raquel Melo Conceito de Beleza",
   "short_name": "Raquel Melo",
-  "description": "Todas as cores, dos tons naturais às cores fantasia. Provador de cores e agendamento pelo WhatsApp.",
+  "description": "Colorista de todas as cores: coloração, mechas e cores fantasia. Resultados, vídeos, horários e agendamento pelo WhatsApp.",
   "lang": "pt-BR",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#241A10",
-  "theme_color": "#241A10",
+  "background_color": "#FBF7F0",
+  "theme_color": "#FBF7F0",
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },

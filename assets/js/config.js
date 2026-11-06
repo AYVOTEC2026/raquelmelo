@@ -16,6 +16,9 @@ window.SITE_CONFIG = {
   // Usuário do Instagram, sem o @. Ex.: "raquelmelo.conceitodebeleza"
   instagram: "",
 
+  // Cidade, para aparecer no topo do site. Ex.: "Vitória · ES"
+  cidade: "",
+
   // Endereço completo, do jeito que deve aparecer no site
   // Ex.: "Rua das Flores, 123, sala 4, Centro, Vitória, ES"
   endereco: "",
@@ -36,7 +39,11 @@ window.SITE_CONFIG = {
   // Ex.: "https://g.page/r/XXXXXXXX/review"
   google: "",
 
-  // Nota no Google, para mostrar o selo no topo do site (deixe vazio para não mostrar).
+  // Nota no Google, para mostrar o selo na foto do topo (vazio = não mostra).
   // Ex.: "5,0"
   notaGoogle: "",
+
+  // Opcionais: link do canal no YouTube e usuário do TikTok (sem o @)
+  youtube: "",
+  tiktok: "",
 };
