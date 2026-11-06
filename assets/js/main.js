@@ -21,7 +21,7 @@
   };
   const externalLink = (href, text) => el('a', { href, target: '_blank', rel: 'noopener' }, text);
 
-  /* ---------- Contatos ---------- */
+  /* ---------- Contatos (tudo vem de config.js; o que estiver vazio fica escondido) ---------- */
 
   const waDigits = String(cfg.whatsapp || '').replace(/\D/g, '');
   const igUser = String(cfg.instagram || '')
@@ -31,9 +31,15 @@
     .replace(/[/?#].*$/, '');
   const address = String(cfg.endereco || '').trim();
   const hours = Array.isArray(cfg.horarios) ? cfg.horarios.filter(Boolean) : [];
+  const pagamento = Array.isArray(cfg.pagamento) ? cfg.pagamento.filter(Boolean) : [];
+  const googleUrl = String(cfg.google || '').trim();
+  const notaGoogle = String(cfg.notaGoogle || '').trim();
   const mapsUrl = String(cfg.mapsUrl || '').trim() ||
     (address ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(address) : '');
   const wazeUrl = address ? 'https://waze.com/ul?navigate=yes&q=' + encodeURIComponent(address) : '';
+  const uberUrl = address
+    ? 'https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff%5Bformatted_address%5D=' + encodeURIComponent(address)
+    : '';
   const igUrl = igUser ? 'https://www.instagram.com/' + igUser + '/' : '';
 
   const waUrl = (msg) =>
@@ -45,6 +51,18 @@
     if (n.length === 10) return `(${n.slice(0, 2)}) ${n.slice(2, 6)}-${n.slice(6)}`;
     return '+' + digits;
   };
+  const listaPt = (itens) => (itens.length <= 1 ? itens.join('') : itens.slice(0, -1).join(', ') + ' e ' + itens[itens.length - 1]);
+  const icone = (id) => {
+    const ns = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('class', 'icon');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('aria-hidden', 'true');
+    const use = document.createElementNS(ns, 'use');
+    use.setAttribute('href', '#' + id);
+    svg.append(use);
+    return svg;
+  };
 
   // Sem WhatsApp configurado, os botões continuam levando à seção de contato.
   if (waDigits) {
@@ -53,45 +71,164 @@
       a.target = '_blank';
       a.rel = 'noopener';
     });
-    const cta = $('[data-contato-cta]');
-    if (cta) cta.hidden = false;
   }
 
-  const fillContact = (key, render) => {
-    const row = $(`[data-contato="${key}"]`);
-    if (!row) return;
-    $('dd', row).replaceChildren(...render());
-    row.hidden = false;
-  };
-
-  if (waDigits) fillContact('whatsapp', () => [externalLink(waUrl(), formatPhone(waDigits))]);
-  if (igUser) fillContact('instagram', () => [externalLink(igUrl, '@' + igUser)]);
-  if (address) {
-    fillContact('endereco', () => {
-      const routes = el('span', { class: 'contato-rotas' });
-      routes.append(externalLink(mapsUrl, 'Abrir no Google Maps'), externalLink(wazeUrl, 'Abrir no Waze'));
-      return [el('span', {}, address), routes];
-    });
-  }
-  if (hours.length) {
-    fillContact('horarios', () => {
-      const list = el('ul', { class: 'contato-horarios' });
-      hours.forEach((h) => list.append(el('li', {}, h)));
-      return [list];
-    });
-  }
-  if (!waDigits && !igUser && !address && !hours.length) {
-    const pending = $('[data-contato-pendente]');
-    if (pending) pending.hidden = false;
-  }
-
-  $$('[data-footer-instagram]').forEach((a) => {
+  // Instagram no cabeçalho e no rodapé
+  $$('[data-instagram-link], [data-footer-instagram]').forEach((a) => {
     if (!igUrl) return;
     a.href = igUrl;
     a.target = '_blank';
     a.rel = 'noopener';
     a.hidden = false;
   });
+
+  // Selo com a nota do Google, sobre a foto do topo
+  const notaEl = $('[data-nota-google]');
+  if (notaEl && notaGoogle) {
+    $('[data-nota-valor]', notaEl).textContent = notaGoogle;
+    if (googleUrl) notaEl.href = googleUrl;
+    else notaEl.removeAttribute('href');
+    notaEl.setAttribute('aria-label', 'Nota ' + notaGoogle + ' no Google');
+    notaEl.hidden = false;
+  }
+
+  // Horários: tabela com o dia de hoje em destaque
+  const DIAS = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
+  const semAcento = (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const diasDoTexto = (texto) => {
+    const t = semAcento(texto);
+    const achados = DIAS.map((d, i) => ({ i, pos: t.indexOf(d) })).filter((x) => x.pos >= 0).sort((a, b) => a.pos - b.pos);
+    if (achados.length === 2 && / a /.test(t.slice(achados[0].pos, achados[1].pos + 1))) {
+      const intervalo = [];
+      for (let i = achados[0].i; ; i = (i + 1) % 7) {
+        intervalo.push(i);
+        if (i === achados[1].i || intervalo.length > 7) break;
+      }
+      return intervalo;
+    }
+    return achados.map((x) => x.i);
+  };
+  const tabela = $('[data-horarios]');
+  if (tabela && hours.length) {
+    const hoje = new Date().getDay();
+    const corpo = $('tbody', tabela);
+    hours.forEach((linha) => {
+      const i = linha.indexOf(':');
+      const dia = i > 0 ? linha.slice(0, i).trim() : linha.trim();
+      const hora = i > 0 ? linha.slice(i + 1).trim() : '';
+      const tr = el('tr');
+      tr.append(el('th', { scope: 'row' }, dia), el('td', {}, hora));
+      if (diasDoTexto(dia).includes(hoje)) {
+        tr.classList.add('is-hoje');
+        tr.setAttribute('aria-current', 'date');
+      }
+      corpo.append(tr);
+    });
+    tabela.hidden = false;
+    $('[data-horarios-vazio]').hidden = true;
+  }
+
+  if (address) {
+    $('[data-endereco-texto]').textContent = address;
+    $('[data-endereco-bloco]').hidden = false;
+  }
+  if (pagamento.length) {
+    $('[data-pagamento-texto]').textContent = listaPt(pagamento) + '.';
+    $('[data-pagamento-bloco]').hidden = false;
+  }
+
+  // Mapa: só carrega o Google Maps quando a pessoa pede (mais leve e sem enviar dados antes)
+  const mapa = $('[data-mapa]');
+  if (mapa) {
+    const mapaTexto = $('[data-mapa-texto]', mapa);
+    const mapaAbrir = $('[data-mapa-abrir]', mapa);
+    if (address) {
+      mapaTexto.textContent = address;
+      mapaAbrir.hidden = false;
+      mapaAbrir.addEventListener('click', () => {
+        const quadro = el('iframe', {
+          src: 'https://www.google.com/maps?q=' + encodeURIComponent(address) + '&output=embed',
+          title: 'Mapa com o endereço do salão',
+          loading: 'lazy',
+          referrerpolicy: 'no-referrer-when-downgrade',
+          allowfullscreen: '',
+        });
+        mapa.append(quadro);
+        $('[data-mapa-capa]', mapa).hidden = true;
+      });
+    } else if (waDigits || igUser || hours.length) {
+      mapaTexto.textContent = 'Raquel Melo Conceito de Beleza';
+    }
+  }
+
+  // Botões de contato e rotas
+  const botoes = $('[data-contato-botoes]');
+  if (botoes) {
+    const botao = (href, iconeId, titulo, sub) => {
+      const a = el('a', { class: 'contato-botao', href, target: '_blank', rel: 'noopener' });
+      const texto = el('span');
+      texto.append(el('strong', {}, titulo), el('small', {}, sub));
+      a.append(icone(iconeId), texto);
+      botoes.append(a);
+    };
+    if (waDigits) botao(waUrl(), 'icon-whatsapp', 'WhatsApp', formatPhone(waDigits));
+    else $('.contato-botao-destaque', botoes).hidden = true;
+    if (igUrl) botao(igUrl, 'icon-instagram', 'Instagram', '@' + igUser);
+    if (googleUrl) botao(googleUrl, 'icon-estrela', 'Avalie no Google', 'Conte como foi');
+    if (address) {
+      botao(mapsUrl, 'icon-pin', 'Google Maps', 'Ver a rota');
+      botao(wazeUrl, 'icon-rota', 'Waze', 'Navegar até o salão');
+      botao(uberUrl, 'icon-carro', 'Uber', 'Chamar um carro');
+    }
+    if (!botoes.children.length || botoes.querySelectorAll('a:not([hidden])').length === 0) botoes.hidden = true;
+  }
+
+  // Perguntas frequentes geradas a partir dos dados (como no site de referência)
+  const faqLista = $('.faq-list');
+  if (faqLista) {
+    const pergunta = (titulo, montar) => {
+      const d = el('details', { class: 'faq-item' });
+      const r = el('div', { class: 'faq-answer' });
+      montar(r);
+      d.append(el('summary', {}, titulo), r);
+      return d;
+    };
+    const extras = [];
+    if (address) {
+      extras.push(pergunta('Onde fica o salão?', (r) => {
+        const p = el('p', {}, address + '. ');
+        p.append(externalLink(mapsUrl, 'Abrir no Google Maps'), document.createTextNode(' ou '), externalLink(wazeUrl, 'no Waze'), document.createTextNode('.'));
+        r.append(p);
+      }));
+    }
+    if (hours.length) {
+      extras.push(pergunta('Qual é o horário de atendimento?', (r) => {
+        const ul = el('ul');
+        hours.forEach((h) => ul.append(el('li', {}, h)));
+        r.append(ul, el('p', {}, 'O atendimento é somente com horário marcado.'));
+      }));
+    }
+    if (pagamento.length) {
+      extras.push(pergunta('Quais são as formas de pagamento?', (r) => r.append(el('p', {}, listaPt(pagamento) + '.'))));
+    }
+    if (googleUrl) {
+      extras.push(pergunta('Onde vejo as avaliações de outras clientes?', (r) => {
+        const p = el('p', {}, 'No perfil do salão no Google: ');
+        p.append(externalLink(googleUrl, 'ver as avaliações'), document.createTextNode('.'));
+        r.append(p);
+      }));
+    }
+    faqLista.prepend(...extras);
+  }
+
+  // Rodapé: onde estamos
+  const onde = $('[data-footer-onde]');
+  if (onde && (address || waDigits)) {
+    if (address) onde.append(el('span', {}, address));
+    if (address && waDigits) onde.append(el('br'));
+    if (waDigits) onde.append(el('span', {}, 'WhatsApp ' + formatPhone(waDigits)));
+    onde.hidden = false;
+  }
 
   /* ---------- Dados estruturados (Google) ---------- */
 
@@ -108,6 +245,7 @@
   if (waDigits) ld.telephone = '+' + waDigits;
   if (address) ld.address = { '@type': 'PostalAddress', streetAddress: address, addressCountry: 'BR' };
   if (igUrl) ld.sameAs = [igUrl];
+  if (pagamento.length) ld.paymentAccepted = listaPt(pagamento);
   document.head.append(el('script', { type: 'application/ld+json' }, JSON.stringify(ld)));
 
   /* ---------- Menu do celular ---------- */
@@ -210,6 +348,65 @@
     syncButton();
   }
 
+  /* ---------- Faixa de serviços: o conteúdo é duplicado para rolar sem emenda ---------- */
+
+  $$('.faixa-trilho').forEach((t) => { t.innerHTML += t.innerHTML; });
+
+  /* ---------- Carrossel de resultados (arrastar no celular, setas e pontos) ---------- */
+
+  const carrossel = $('[data-carrossel]');
+  if (carrossel) {
+    const trilho = $('[data-carrossel-trilho]', carrossel);
+    const itens = $$('.carrossel-item', trilho);
+    const pontos = $('[data-carrossel-pontos]', carrossel);
+    const anterior = $('[data-carrossel-anterior]', carrossel);
+    const proximo = $('[data-carrossel-proximo]', carrossel);
+    const visiveis = new Set();
+    let atual = 0;
+
+    const irPara = (i) => {
+      const alvo = itens[clamp(i, 0, itens.length - 1)];
+      trilho.scrollTo({ left: alvo.offsetLeft - itens[0].offsetLeft, behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+    };
+    const marcar = () => {
+      const lista = [...visiveis].sort((a, b) => a - b);
+      if (lista.length) atual = lista[0];
+      $$('.carrossel-ponto', pontos).forEach((p, i) => p.setAttribute('aria-current', String(i === atual)));
+      anterior.disabled = trilho.scrollLeft <= 4;
+      proximo.disabled = trilho.scrollLeft + trilho.clientWidth >= trilho.scrollWidth - 4;
+    };
+
+    itens.forEach((item, i) => {
+      item.setAttribute('role', 'group');
+      item.setAttribute('aria-roledescription', 'slide');
+      item.setAttribute('aria-label', (i + 1) + ' de ' + itens.length);
+      const ponto = el('button', { type: 'button', class: 'carrossel-ponto', 'aria-label': 'Ir para o resultado ' + (i + 1) });
+      ponto.addEventListener('click', () => irPara(i));
+      pontos.append(ponto);
+    });
+    anterior.addEventListener('click', () => irPara(atual - 1));
+    proximo.addEventListener('click', () => irPara(atual + 1));
+
+    if ('IntersectionObserver' in window) {
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          const i = itens.indexOf(e.target);
+          if (e.isIntersecting) visiveis.add(i);
+          else visiveis.delete(i);
+        });
+        marcar();
+      }, { root: trilho, threshold: 0.6 });
+      itens.forEach((item) => obs.observe(item));
+    }
+    let agendado = false;
+    trilho.addEventListener('scroll', () => {
+      if (agendado) return;
+      agendado = true;
+      requestAnimationFrame(() => { agendado = false; marcar(); });
+    }, { passive: true });
+    marcar();
+  }
+
   /* ---------- Botão fixo de agendamento no celular ---------- */
 
   const mobileCta = $('[data-mobile-cta]');
@@ -219,9 +416,14 @@
   if (mobileCta && heroActions && contato && 'IntersectionObserver' in window) {
     let heroCtaVisible = true;
     let contatoVisible = false;
-    const update = () => mobileCta.classList.toggle('is-visible', !heroCtaVisible && !contatoVisible);
+    let provadorVisible = false; // o provador tem o próprio botão; o fixo sairia por cima da foto
+    const update = () => mobileCta.classList.toggle('is-visible', !heroCtaVisible && !contatoVisible && !provadorVisible);
     new IntersectionObserver(([e]) => { heroCtaVisible = e.isIntersecting; update(); }).observe(heroActions);
     new IntersectionObserver(([e]) => { contatoVisible = e.isIntersecting; update(); }, { threshold: 0.1 }).observe(contato);
+    const provadorSec = $('#provador');
+    if (provadorSec) {
+      new IntersectionObserver(([e]) => { provadorVisible = e.isIntersecting; update(); }, { threshold: 0.12 }).observe(provadorSec);
+    }
   }
 
   $$('[data-ano]').forEach((n) => { n.textContent = String(new Date().getFullYear()); });
@@ -241,9 +443,23 @@
     const arquivo = $('[data-fonte-arquivo]', provSec);
     const btnDemo = $('[data-fonte="demo"]', provSec);
     const btnCamera = $('[data-fonte="camera"]', provSec);
+    const btnCapturar = $('[data-provador-capturar]', provSec);
+    const btnAjustar = $('[data-provador-ajustar]', provSec);
+    const edicao = $('[data-provador-edicao]', provSec);
+    const btnDesfazer = $('[data-provador-desfazer]', provSec);
+    const cursor = $('[data-provador-cursor]', provSec);
+    const diagTom = $('[data-diagnostico-tom]', provSec);
+    const diagDica = $('[data-diagnostico-dica]', provSec);
     const rotuloArquivo = arquivo.closest('.provador-fonte');
     const marcado = $('.tom[aria-checked="true"]', provSec);
-    const ui = { cor: marcado.dataset.cor, nome: marcado.dataset.nome, tecnica: 'ombre', intens: 0.9, div: 0 };
+    const ui = {
+      cor: marcado.dataset.cor, nome: marcado.dataset.nome, base: Number(marcado.dataset.base), tipo: marcado.dataset.tipo,
+      tecnica: 'ombre', intens: 0.9, div: 0, semClarear: false, editando: false, pincel: 'add', tamanho: 18,
+    };
+    const NIVEL = ['preto', 'castanho escuríssimo', 'castanho escuro', 'castanho médio', 'castanho claro',
+      'loiro escuro', 'loiro médio', 'loiro claro', 'loiro muito claro', 'loiro claríssimo'];
+    // navegadores dentro de apps (Instagram, Facebook, TikTok) costumam bloquear a câmera
+    const dentroDeApp = /Instagram|FBAN|FBAV|Line\/|TikTok|musical_ly/i.test(navigator.userAgent);
     let motor = null;
     let avisoTimer = 0;
 
@@ -256,11 +472,35 @@
       cta.dataset.wa = 'Olá, Raquel! Testei a cor ' + ui.nome + ' no provador do site e quero agendar uma avaliação.';
       if (waDigits) cta.href = waUrl(cta.dataset.wa);
     };
-    const marcarFonte = (nome) => {
-      btnDemo.setAttribute('aria-pressed', String(nome === 'demo'));
-      btnCamera.setAttribute('aria-pressed', String(nome === 'camera'));
-      btnCamera.textContent = nome === 'camera' ? 'Parar câmera' : 'Usar minha câmera';
-      rotuloArquivo.classList.toggle('is-ativa', nome === 'foto');
+
+    // diagnóstico: tom atual (níveis 1 a 10) e quanto precisa clarear para a cor escolhida
+    const atualizarDiagnostico = () => {
+      if (!motor) return;
+      const nivel = motor.nivel;
+      if (!nivel) {
+        diagTom.textContent = 'Não deu para medir o tom do cabelo nesta imagem.';
+        diagDica.textContent = 'Use uma foto com o cabelo bem visível, com luz natural.';
+        return;
+      }
+      const n = Math.max(1, Math.min(10, Math.round(nivel)));
+      const quem = motor.fonte === 'demo' ? 'Tom da Raquel nesta foto' : 'Seu tom atual';
+      diagTom.textContent = quem + ': ' + NIVEL[n - 1] + ', nível ' + n + ' (estimado pela imagem).';
+      const delta = ui.base - n;
+      let dica;
+      if (ui.semClarear) {
+        dica = delta >= 2
+          ? 'Só com tinta, sem clarear antes, a cor fica bem mais discreta: é o que você vê agora.'
+          : 'Só com tinta, sem clarear: o resultado fica perto do seu tom de base.';
+      } else if (delta >= 2) {
+        dica = 'Para chegar em ' + ui.nome.toLowerCase() + ', o fio precisa clarear cerca de ' + delta +
+          ' tons antes (até o nível ' + ui.base + '). A Raquel avalia a técnica mais segura para você.';
+        if (ui.tipo === 'fantasia') dica += ' Cores fantasia ficam mais vivas sobre fios bem claros.';
+      } else if (delta <= -1) {
+        dica = 'Escurecer é mais simples: a cor é depositada sobre o seu tom atual.';
+      } else {
+        dica = 'É uma cor próxima do seu tom atual, com um processo mais simples.';
+      }
+      diagDica.textContent = dica;
     };
 
     // grupos de opções: clique e setas do teclado
@@ -287,21 +527,35 @@
     opcoes($$('.tom', provSec), (b) => {
       ui.cor = b.dataset.cor;
       ui.nome = b.dataset.nome;
+      ui.base = Number(b.dataset.base);
+      ui.tipo = b.dataset.tipo;
       nomeEl.textContent = ui.nome;
       atualizarCta();
+      atualizarDiagnostico();
       if (motor) motor.cor(ui.cor);
     });
     opcoes($$('[data-tecnica]', provSec), (b) => {
       ui.tecnica = b.dataset.tecnica;
       if (motor) motor.tecnica(ui.tecnica);
     });
+    opcoes($$('[data-clarear]', provSec), (b) => {
+      ui.semClarear = b.dataset.clarear === 'nao';
+      if (motor) motor.semClarear(ui.semClarear);
+      atualizarDiagnostico();
+    });
+    opcoes($$('[data-pincel]', provSec), (b) => { ui.pincel = b.dataset.pincel; });
+    opcoes($$('[data-tamanho]', provSec), (b) => {
+      ui.tamanho = Number(b.dataset.tamanho);
+      cursor.style.setProperty('--pincel', ui.tamanho * 2 + 'px');
+    });
+    cursor.style.setProperty('--pincel', ui.tamanho * 2 + 'px');
     intensidade.addEventListener('input', () => {
       ui.intens = intensidade.value / 100;
       if (motor) motor.intensidade(ui.intens);
     });
     atualizarCta();
 
-    // antes e depois: arrastar o divisor (mouse, dedo ou setas)
+    // antes e depois
     const definirDivisor = (v) => {
       ui.div = clamp(v, 0, 1);
       tela.style.setProperty('--div', ui.div.toFixed(4));
@@ -310,21 +564,6 @@
       tela.classList.toggle('mostra-antes', ui.div > 0.18);
       if (motor) motor.divisor(ui.div);
     };
-    let arrasto = null;
-    const posicao = (e) => {
-      const r = tela.getBoundingClientRect();
-      return (e.clientX - r.left) / r.width;
-    };
-    tela.addEventListener('pointerdown', (e) => {
-      if (e.button > 0) return;
-      arrasto = e.pointerId;
-      try { tela.setPointerCapture(e.pointerId); } catch (_) { /* ignore */ }
-      definirDivisor(posicao(e));
-    });
-    tela.addEventListener('pointermove', (e) => { if (arrasto === e.pointerId) definirDivisor(posicao(e)); });
-    const soltarDivisor = (e) => { if (arrasto === e.pointerId) arrasto = null; };
-    tela.addEventListener('pointerup', soltarDivisor);
-    tela.addEventListener('pointercancel', soltarDivisor);
     divisor.addEventListener('keydown', (e) => {
       const passo = { ArrowRight: 0.05, ArrowUp: 0.05, ArrowLeft: -0.05, ArrowDown: -0.05 }[e.key];
       if (passo === undefined && e.key !== 'Home' && e.key !== 'End') return;
@@ -334,7 +573,93 @@
       else definirDivisor(ui.div + passo);
     });
 
+    // ajuste fino da área do cabelo (pincel)
+    const atualizarDesfazer = () => { btnDesfazer.disabled = !(motor && motor.podeDesfazer); };
+    const definirEdicao = (on) => {
+      if (on && (!motor || motor.fonte === 'camera')) return;
+      ui.editando = on;
+      btnAjustar.setAttribute('aria-pressed', String(on));
+      edicao.hidden = !on;
+      tela.classList.toggle('is-editando', on);
+      if (!on) cursor.classList.remove('is-visivel');
+      if (motor) motor.mostrarArea(on);
+      if (on) definirDivisor(0);
+      atualizarDesfazer();
+    };
+    btnAjustar.addEventListener('click', () => definirEdicao(!ui.editando));
+    $('[data-provador-pronto]', provSec).addEventListener('click', () => definirEdicao(false));
+    btnDesfazer.addEventListener('click', () => {
+      if (!motor) return;
+      motor.desfazer();
+      atualizarDesfazer();
+      atualizarDiagnostico();
+    });
+    $('[data-provador-restaurar]', provSec).addEventListener('click', () => {
+      if (!motor) return;
+      motor.restaurar();
+      atualizarDesfazer();
+      atualizarDiagnostico();
+    });
+
+    // na foto: o dedo/mouse move o divisor, ou pinta a área quando o ajuste está ligado
+    let arrasto = null;
+    const local = (e) => {
+      const r = tela.getBoundingClientRect();
+      return [e.clientX - r.left, e.clientY - r.top, r.width];
+    };
+    const moverCursor = (e) => {
+      const [x, y] = local(e);
+      cursor.style.setProperty('--cx', x + 'px');
+      cursor.style.setProperty('--cy', y + 'px');
+      cursor.classList.add('is-visivel');
+    };
+    tela.addEventListener('pointerdown', (e) => {
+      if (e.button > 0) return;
+      arrasto = e.pointerId;
+      try { tela.setPointerCapture(e.pointerId); } catch (_) { /* ignore */ }
+      const [x, y, w] = local(e);
+      if (ui.editando && motor) {
+        e.preventDefault();
+        motor.pincel.inicio(x, y, ui.pincel, ui.tamanho);
+        moverCursor(e);
+      } else {
+        definirDivisor(x / w);
+      }
+    });
+    tela.addEventListener('pointermove', (e) => {
+      if (ui.editando) moverCursor(e);
+      if (arrasto !== e.pointerId) return;
+      const [x, y, w] = local(e);
+      if (ui.editando && motor) motor.pincel.mover(x, y);
+      else definirDivisor(x / w);
+    });
+    const soltar = (e) => {
+      if (arrasto !== e.pointerId) return;
+      arrasto = null;
+      if (ui.editando && motor) {
+        motor.pincel.fim();
+        atualizarDesfazer();
+        atualizarDiagnostico();
+      }
+      if (e.pointerType !== 'mouse') cursor.classList.remove('is-visivel');
+    };
+    tela.addEventListener('pointerup', soltar);
+    tela.addEventListener('pointercancel', soltar);
+    tela.addEventListener('pointerleave', () => cursor.classList.remove('is-visivel'));
+
     // de onde vem a imagem: foto da Raquel, câmera ou foto enviada
+    const marcarFonte = (nome) => {
+      btnDemo.setAttribute('aria-pressed', String(nome === 'demo'));
+      btnCamera.setAttribute('aria-pressed', String(nome === 'camera'));
+      btnCamera.textContent = nome === 'camera' ? 'Parar câmera' : 'Usar minha câmera';
+      btnCapturar.hidden = nome !== 'camera';
+      rotuloArquivo.classList.toggle('is-ativa', nome === 'foto');
+      btnAjustar.disabled = nome === 'camera';
+      btnAjustar.title = nome === 'camera' ? 'Toque em "Capturar e ajustar" para ajustar a área' : '';
+      if (nome === 'camera') definirEdicao(false);
+      atualizarDesfazer();
+      atualizarDiagnostico();
+    };
     btnDemo.addEventListener('click', () => {
       if (!motor) return;
       motor.usarDemo();
@@ -351,19 +676,27 @@
         marcarFonte('camera');
         await motor.usarCamera();
         definirDivisor(0);
+        atualizarDiagnostico();
       } catch (err) {
         motor.usarDemo();
         marcarFonte('demo');
-        aviso(err && err.name === 'NotAllowedError'
-          ? 'A câmera não foi liberada. Você pode testar com uma foto sua.'
-          : 'Não foi possível abrir a câmera aqui. Tente enviar uma foto.', 5);
+        if (dentroDeApp) aviso('O navegador do app bloqueia a câmera. Toque em ··· e escolha "Abrir no navegador", ou envie uma foto.', 8);
+        else if (err && err.name === 'NotAllowedError') aviso('A câmera não foi liberada. Você pode testar com uma foto sua.', 5);
+        else aviso('Não foi possível abrir a câmera aqui. Tente enviar uma foto.', 5);
       }
+    });
+    btnCapturar.addEventListener('click', () => {
+      if (!motor || !motor.capturar()) return;
+      marcarFonte('foto');
+      definirEdicao(true);
+      aviso('Foto capturada. Se precisar, ajuste a área do cabelo.', 3);
     });
     arquivo.addEventListener('change', async () => {
       const f = arquivo.files && arquivo.files[0];
       arquivo.value = '';
       if (!f || !motor) return;
       try {
+        definirEdicao(false);
         await motor.usarFoto(f);
         marcarFonte('foto');
         definirDivisor(0);
@@ -383,6 +716,7 @@
             mascara: 'assets/img/provador-raquel-mascara.png',
             modelo: new URL('assets/models/hair_segmenter.tflite', document.baseURI).href,
             onStatus: (msg) => aviso(msg),
+            onDiagnostico: () => atualizarDiagnostico(),
           }))
           .then((api) => {
             motor = api;
@@ -390,6 +724,7 @@
             motor.tecnica(ui.tecnica);
             motor.intensidade(ui.intens);
             tela.classList.add('is-pronto');
+            atualizarDiagnostico();
             definirDivisor(motion ? 1 : 0.4);
             // revelação: o "depois" entra varrendo a foto quando ela aparece
             new IntersectionObserver(([e], o) => {
@@ -400,8 +735,8 @@
               const anima = (agora) => {
                 const t = Math.min(1, (agora - inicio) / 1500);
                 const suave = 1 - Math.pow(1 - t, 3);
-                if (arrasto === null) definirDivisor(1 - suave * 0.6);
-                if (t < 1 && arrasto === null) requestAnimationFrame(anima);
+                if (arrasto === null && !ui.editando) definirDivisor(1 - suave * 0.6);
+                if (t < 1 && arrasto === null && !ui.editando) requestAnimationFrame(anima);
               };
               requestAnimationFrame(anima);
             }, { threshold: 0.55 }).observe(tela);
@@ -906,7 +1241,9 @@
     }
 
     /* Monograma 3D: carrega o three.js só quando a seção está chegando */
-    if (conceito && palco) {
+    const aparelhoSimples = (navigator.deviceMemory && navigator.deviceMemory <= 2) ||
+      (navigator.connection && navigator.connection.saveData);
+    if (conceito && palco && !aparelhoSimples) {
       const canvas = $('[data-monograma3d]', palco);
       new IntersectionObserver((entries, obs) => {
         if (!entries.some((e) => e.isIntersecting)) return;

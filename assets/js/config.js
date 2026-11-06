@@ -1,8 +1,8 @@
 /* ==========================================================================
-   DADOS DE CONTATO DO SALÃO: edite somente este arquivo.
+   DADOS DO SALÃO: edite somente este arquivo.
 
-   Deixe "" (ou [] nos horários) no que ainda não tiver: o site esconde o
-   item automaticamente. Assim que o WhatsApp for preenchido, todos os botões
+   Deixe "" (ou [] nas listas) no que ainda não tiver: o site esconde o item
+   automaticamente. Assim que o WhatsApp for preenchido, todos os botões
    "Agendar" passam a abrir a conversa com a mensagem já escrita.
    ========================================================================== */
 
@@ -24,7 +24,19 @@ window.SITE_CONFIG = {
   // do endereço acima.
   mapsUrl: "",
 
-  // Horários de atendimento, um item por linha.
+  // Horários de atendimento, um item por linha, no formato "Dia: horário".
+  // O dia de hoje fica destacado no site.
   // Ex.: ["Terça a sexta: 9h às 18h", "Sábado: 8h às 16h", "Domingo e segunda: fechado"]
   horarios: [],
+
+  // Formas de pagamento, uma por item. Ex.: ["Pix", "Cartão de crédito e débito"]
+  pagamento: [],
+
+  // Link do perfil do salão no Google (para ver e deixar avaliações).
+  // Ex.: "https://g.page/r/XXXXXXXX/review"
+  google: "",
+
+  // Nota no Google, para mostrar o selo no topo do site (deixe vazio para não mostrar).
+  // Ex.: "5,0"
+  notaGoogle: "",
 };

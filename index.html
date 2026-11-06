@@ -23,9 +23,14 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="apple-mobile-web-app-title" content="Raquel Melo">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="format-detection" content="telephone=no">
 
-  <link rel="preload" href="assets/fonts/bodoni-moda-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="assets/fonts/jost-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/playfair-display-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" as="image" type="image/avif"
         imagesrcset="assets/img/raquel-melo-retrato-400.avif 400w, assets/img/raquel-melo-retrato-700.avif 700w, assets/img/raquel-melo-retrato-1000.avif 1000w"
         imagesizes="(min-width: 900px) 390px, 48vw" fetchpriority="high">
@@ -64,7 +69,13 @@
         </ul>
       </nav>
 
+      <a class="header-icone header-instagram" href="#" data-instagram-link hidden aria-label="Instagram da Raquel Melo" target="_blank" rel="noopener">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-instagram"></use></svg>
+      </a>
       <a class="btn btn-outline header-cta" href="#contato" data-wa="Olá, Raquel! Vim pelo site e gostaria de agendar um horário.">Agendar</a>
+      <a class="header-icone header-whats" href="#contato" data-wa="Olá, Raquel! Vim pelo site e gostaria de agendar um horário." aria-label="Agendar pelo WhatsApp">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-whatsapp"></use></svg>
+      </a>
 
       <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu-mobile">
         <span class="menu-toggle-icon" aria-hidden="true"></span>
@@ -122,6 +133,15 @@
                    alt="Raquel Melo sentada em uma poltrona, de camisa branca e blazer bege">
             </picture>
           </figure>
+          <span class="selo-giratorio" aria-hidden="true">
+            <img class="selo-anel" src="assets/img/logo-selo-anel-light.svg" alt="" width="132" height="132">
+            <img class="selo-centro" src="assets/img/logo-selo-centro-light.svg" alt="" width="132" height="132">
+          </span>
+          <a class="nota-google" href="#" data-nota-google hidden target="_blank" rel="noopener">
+            <strong data-nota-valor>5,0</strong>
+            <span class="nota-estrelas" aria-hidden="true">★★★★★</span>
+            <span>no Google</span>
+          </a>
           <span class="mecha" style="--i:3; --tom:#E39AB3; --len:88%" aria-hidden="true"></span>
           <span class="mecha" style="--i:4; --tom:#A58BCD; --len:75%" aria-hidden="true"></span>
           <span class="mecha" style="--i:5; --tom:#4F6DB3; --len:62%" aria-hidden="true"></span>
@@ -129,27 +149,50 @@
       </div>
     </section>
 
+    <!-- ============================== Faixa de serviços ============================== -->
+    <div class="faixa" aria-hidden="true">
+      <div class="faixa-fita faixa-fita-b"><div class="faixa-trilho"><span class="faixa-item">Avaliação personalizada</span><span class="faixa-item">Provador de cores online</span><span class="faixa-item">Cuidado com o fio</span><span class="faixa-item">Atendimento com hora marcada</span><span class="faixa-item">Técnica sob medida</span></div></div>
+      <div class="faixa-fita faixa-fita-a"><div class="faixa-trilho"><span class="faixa-item">Loiros</span><span class="faixa-item">Morena iluminada</span><span class="faixa-item">Cores fantasia</span><span class="faixa-item">Mechas em cachos</span><span class="faixa-item">Ruivos e acobreados</span><span class="faixa-item">Coloração</span><span class="faixa-item">Tratamentos capilares</span><span class="faixa-item">Corte e finalização</span></div></div>
+    </div>
+
     <!-- ============================== Sobre ============================== -->
     <section class="section section-light" id="sobre" aria-labelledby="sobre-title">
       <div class="container split split-photo-first">
-        <figure class="pendant pendant-2x3" data-reveal="swing">
-          <picture>
-            <source type="image/avif" sizes="(min-width: 900px) 460px, 84vw"
-                    srcset="assets/img/raquel-melo-colorista-500.avif 500w, assets/img/raquel-melo-colorista-800.avif 800w, assets/img/raquel-melo-colorista-1100.avif 1100w">
-            <source type="image/webp" sizes="(min-width: 900px) 460px, 84vw"
-                    srcset="assets/img/raquel-melo-colorista-500.webp 500w, assets/img/raquel-melo-colorista-800.webp 800w, assets/img/raquel-melo-colorista-1100.webp 1100w">
-            <img src="assets/img/raquel-melo-colorista-800.jpg" sizes="(min-width: 900px) 460px, 84vw"
-                 srcset="assets/img/raquel-melo-colorista-500.jpg 500w, assets/img/raquel-melo-colorista-800.jpg 800w, assets/img/raquel-melo-colorista-1100.jpg 1100w"
-                 width="800" height="1200" loading="lazy" decoding="async"
-                 alt="Raquel Melo sorrindo no salão, segurando um pincel de coloração">
-          </picture>
-        </figure>
+        <div class="colagem">
+          <figure class="pendant pendant-2x3 colagem-principal" data-reveal="swing">
+            <picture>
+              <source type="image/avif" sizes="(min-width: 900px) 360px, 70vw" srcset="assets/img/raquel-melo-colorista-500.avif 500w, assets/img/raquel-melo-colorista-800.avif 800w, assets/img/raquel-melo-colorista-1100.avif 1100w">
+              <source type="image/webp" sizes="(min-width: 900px) 360px, 70vw" srcset="assets/img/raquel-melo-colorista-500.webp 500w, assets/img/raquel-melo-colorista-800.webp 800w, assets/img/raquel-melo-colorista-1100.webp 1100w">
+              <img src="assets/img/raquel-melo-colorista-800.jpg" sizes="(min-width: 900px) 360px, 70vw" srcset="assets/img/raquel-melo-colorista-500.jpg 500w, assets/img/raquel-melo-colorista-800.jpg 800w, assets/img/raquel-melo-colorista-1100.jpg 1100w"
+                   width="800" height="1200" loading="lazy" decoding="async"
+                   alt="Raquel Melo sorrindo no salão, segurando um pincel de coloração">
+            </picture>
+          </figure>
+          <figure class="pendant colagem-pb colagem-pb-1" data-reveal="swing">
+            <picture>
+              <source type="image/avif" sizes="(min-width: 900px) 190px, 40vw" srcset="assets/img/raquel-melo-pb-500.avif 500w, assets/img/raquel-melo-pb-800.avif 800w, assets/img/raquel-melo-pb-1100.avif 1100w">
+              <source type="image/webp" sizes="(min-width: 900px) 190px, 40vw" srcset="assets/img/raquel-melo-pb-500.webp 500w, assets/img/raquel-melo-pb-800.webp 800w, assets/img/raquel-melo-pb-1100.webp 1100w">
+              <img src="assets/img/raquel-melo-pb-800.jpg" sizes="(min-width: 900px) 190px, 40vw" srcset="assets/img/raquel-melo-pb-500.jpg 500w, assets/img/raquel-melo-pb-800.jpg 800w, assets/img/raquel-melo-pb-1100.jpg 1100w"
+                   width="800" height="1422" loading="lazy" decoding="async"
+                   alt="Retrato em preto e branco de Raquel Melo, de blazer">
+            </picture>
+          </figure>
+          <figure class="pendant colagem-pb colagem-pb-2" data-reveal="swing">
+            <picture>
+              <source type="image/avif" sizes="(min-width: 900px) 190px, 40vw" srcset="assets/img/raquel-bastidores-pb-300.avif 300w, assets/img/raquel-bastidores-pb-500.avif 500w, assets/img/raquel-bastidores-pb-800.avif 800w">
+              <source type="image/webp" sizes="(min-width: 900px) 190px, 40vw" srcset="assets/img/raquel-bastidores-pb-300.webp 300w, assets/img/raquel-bastidores-pb-500.webp 500w, assets/img/raquel-bastidores-pb-800.webp 800w">
+              <img src="assets/img/raquel-bastidores-pb-500.jpg" sizes="(min-width: 900px) 190px, 40vw" srcset="assets/img/raquel-bastidores-pb-300.jpg 300w, assets/img/raquel-bastidores-pb-500.jpg 500w, assets/img/raquel-bastidores-pb-800.jpg 800w"
+                   width="800" height="889" loading="lazy" decoding="async"
+                   alt="Raquel Melo finalizando os cachos de uma cliente no salão">
+            </picture>
+          </figure>
+        </div>
 
         <div class="split-text">
           <h2 id="sobre-title" data-split>Prazer, eu sou a Raquel.</h2>
           <p class="lead">Sou cabeleireira e colorista. Para mim, a cor certa não é a da moda: é a que conversa com o seu tom de pele, com a sua rotina e com a saúde do seu cabelo.</p>
           <p>Por isso, cada atendimento começa com uma conversa. Entendo o que você deseja, avalio o histórico dos seus fios e só então escolho a técnica, seja um loiro luminoso, uma morena iluminada ou mechas em cachos.</p>
-          <img class="sobre-monograma" src="assets/img/logo-monogram.svg" alt="" width="114" height="101" loading="lazy">
+          <p class="assinatura" aria-hidden="true">Raquel Melo</p>
         </div>
       </div>
     </section>
@@ -164,32 +207,32 @@
           <div class="provador-cartela" role="radiogroup" aria-label="Cores">
             <p class="provador-grupo">Naturais</p>
             <div class="provador-tons">
-              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Preto azulado" data-cor="#15161D" data-nome="Preto azulado" style="--tom:#15161D"><span class="sr-only">Preto azulado</span></button>
-              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Castanho escuro" data-cor="#2E1D12" data-nome="Castanho escuro" style="--tom:#2E1D12"><span class="sr-only">Castanho escuro</span></button>
-              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Chocolate" data-cor="#4A2C1C" data-nome="Chocolate" style="--tom:#4A2C1C"><span class="sr-only">Chocolate</span></button>
-              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Castanho claro" data-cor="#6A4429" data-nome="Castanho claro" style="--tom:#6A4429"><span class="sr-only">Castanho claro</span></button>
-              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Mel" data-cor="#9C6A35" data-nome="Mel" style="--tom:#9C6A35"><span class="sr-only">Mel</span></button>
-              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Caramelo" data-cor="#B0773F" data-nome="Caramelo" style="--tom:#B0773F"><span class="sr-only">Caramelo</span></button>
-              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Loiro dourado" data-cor="#CFA35C" data-nome="Loiro dourado" style="--tom:#CFA35C"><span class="sr-only">Loiro dourado</span></button>
-              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Loiro bege" data-cor="#D6BE98" data-nome="Loiro bege" style="--tom:#D6BE98"><span class="sr-only">Loiro bege</span></button>
-              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Loiro pérola" data-cor="#E4DACA" data-nome="Loiro pérola" style="--tom:#E4DACA"><span class="sr-only">Loiro pérola</span></button>
-              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Platinado" data-cor="#EFEDE7" data-nome="Platinado" style="--tom:#EFEDE7"><span class="sr-only">Platinado</span></button>
-              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Cobre" data-cor="#A9522A" data-nome="Cobre" style="--tom:#A9522A"><span class="sr-only">Cobre</span></button>
-              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Ruivo intenso" data-cor="#8A2E1E" data-nome="Ruivo intenso" style="--tom:#8A2E1E"><span class="sr-only">Ruivo intenso</span></button>
+              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Preto azulado" data-cor="#15161D" data-nome="Preto azulado" data-base="1" data-tipo="natural" style="--tom:#15161D"><span class="sr-only">Preto azulado</span></button>
+              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Castanho escuro" data-cor="#2E1D12" data-nome="Castanho escuro" data-base="3" data-tipo="natural" style="--tom:#2E1D12"><span class="sr-only">Castanho escuro</span></button>
+              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Chocolate" data-cor="#4A2C1C" data-nome="Chocolate" data-base="4" data-tipo="natural" style="--tom:#4A2C1C"><span class="sr-only">Chocolate</span></button>
+              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Castanho claro" data-cor="#6A4429" data-nome="Castanho claro" data-base="5" data-tipo="natural" style="--tom:#6A4429"><span class="sr-only">Castanho claro</span></button>
+              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Mel" data-cor="#9C6A35" data-nome="Mel" data-base="7" data-tipo="natural" style="--tom:#9C6A35"><span class="sr-only">Mel</span></button>
+              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Caramelo" data-cor="#B0773F" data-nome="Caramelo" data-base="7" data-tipo="natural" style="--tom:#B0773F"><span class="sr-only">Caramelo</span></button>
+              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Loiro dourado" data-cor="#CFA35C" data-nome="Loiro dourado" data-base="8" data-tipo="natural" style="--tom:#CFA35C"><span class="sr-only">Loiro dourado</span></button>
+              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Loiro bege" data-cor="#D6BE98" data-nome="Loiro bege" data-base="9" data-tipo="natural" style="--tom:#D6BE98"><span class="sr-only">Loiro bege</span></button>
+              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Loiro pérola" data-cor="#E4DACA" data-nome="Loiro pérola" data-base="10" data-tipo="natural" style="--tom:#E4DACA"><span class="sr-only">Loiro pérola</span></button>
+              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Platinado" data-cor="#EFEDE7" data-nome="Platinado" data-base="10" data-tipo="natural" style="--tom:#EFEDE7"><span class="sr-only">Platinado</span></button>
+              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Cobre" data-cor="#A9522A" data-nome="Cobre" data-base="7" data-tipo="natural" style="--tom:#A9522A"><span class="sr-only">Cobre</span></button>
+              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Ruivo intenso" data-cor="#8A2E1E" data-nome="Ruivo intenso" data-base="6" data-tipo="natural" style="--tom:#8A2E1E"><span class="sr-only">Ruivo intenso</span></button>
             </div>
             <p class="provador-grupo">Fantasia</p>
             <div class="provador-tons">
-              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Vermelho cereja" data-cor="#9E1230" data-nome="Vermelho cereja" style="--tom:#9E1230"><span class="sr-only">Vermelho cereja</span></button>
-              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Marsala" data-cor="#6A1E30" data-nome="Marsala" style="--tom:#6A1E30"><span class="sr-only">Marsala</span></button>
-              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Rosa chiclete" data-cor="#E2589A" data-nome="Rosa chiclete" style="--tom:#E2589A"><span class="sr-only">Rosa chiclete</span></button>
-              <button type="button" class="tom" role="radio" aria-checked="true" tabindex="0" title="Rosa quartzo" data-cor="#E8A6BA" data-nome="Rosa quartzo" style="--tom:#E8A6BA"><span class="sr-only">Rosa quartzo</span></button>
-              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Pêssego" data-cor="#F0AA8B" data-nome="Pêssego" style="--tom:#F0AA8B"><span class="sr-only">Pêssego</span></button>
-              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Lilás" data-cor="#B79CDB" data-nome="Lilás" style="--tom:#B79CDB"><span class="sr-only">Lilás</span></button>
-              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Violeta" data-cor="#6B3C9E" data-nome="Violeta" style="--tom:#6B3C9E"><span class="sr-only">Violeta</span></button>
-              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Azul royal" data-cor="#2D4FB0" data-nome="Azul royal" style="--tom:#2D4FB0"><span class="sr-only">Azul royal</span></button>
-              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Azul pastel" data-cor="#9DC3E8" data-nome="Azul pastel" style="--tom:#9DC3E8"><span class="sr-only">Azul pastel</span></button>
-              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Verde esmeralda" data-cor="#1E7A58" data-nome="Verde esmeralda" style="--tom:#1E7A58"><span class="sr-only">Verde esmeralda</span></button>
-              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Prata" data-cor="#AEB0B4" data-nome="Prata" style="--tom:#AEB0B4"><span class="sr-only">Prata</span></button>
+              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Vermelho cereja" data-cor="#9E1230" data-nome="Vermelho cereja" data-base="6" data-tipo="fantasia" style="--tom:#9E1230"><span class="sr-only">Vermelho cereja</span></button>
+              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Marsala" data-cor="#6A1E30" data-nome="Marsala" data-base="4" data-tipo="fantasia" style="--tom:#6A1E30"><span class="sr-only">Marsala</span></button>
+              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Rosa chiclete" data-cor="#E2589A" data-nome="Rosa chiclete" data-base="8" data-tipo="fantasia" style="--tom:#E2589A"><span class="sr-only">Rosa chiclete</span></button>
+              <button type="button" class="tom" role="radio" aria-checked="true" tabindex="0" title="Rosa quartzo" data-cor="#E8A6BA" data-nome="Rosa quartzo" data-base="9" data-tipo="fantasia" style="--tom:#E8A6BA"><span class="sr-only">Rosa quartzo</span></button>
+              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Pêssego" data-cor="#F0AA8B" data-nome="Pêssego" data-base="9" data-tipo="fantasia" style="--tom:#F0AA8B"><span class="sr-only">Pêssego</span></button>
+              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Lilás" data-cor="#B79CDB" data-nome="Lilás" data-base="9" data-tipo="fantasia" style="--tom:#B79CDB"><span class="sr-only">Lilás</span></button>
+              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Violeta" data-cor="#6B3C9E" data-nome="Violeta" data-base="7" data-tipo="fantasia" style="--tom:#6B3C9E"><span class="sr-only">Violeta</span></button>
+              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Azul royal" data-cor="#2D4FB0" data-nome="Azul royal" data-base="8" data-tipo="fantasia" style="--tom:#2D4FB0"><span class="sr-only">Azul royal</span></button>
+              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Azul pastel" data-cor="#9DC3E8" data-nome="Azul pastel" data-base="10" data-tipo="fantasia" style="--tom:#9DC3E8"><span class="sr-only">Azul pastel</span></button>
+              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Verde esmeralda" data-cor="#1E7A58" data-nome="Verde esmeralda" data-base="8" data-tipo="fantasia" style="--tom:#1E7A58"><span class="sr-only">Verde esmeralda</span></button>
+              <button type="button" class="tom" role="radio" aria-checked="false" tabindex="-1" title="Prata" data-cor="#AEB0B4" data-nome="Prata" data-base="10" data-tipo="fantasia" style="--tom:#AEB0B4"><span class="sr-only">Prata</span></button>
             </div>
           </div>
           <p class="provador-escolha" aria-live="polite">Cor escolhida: <strong data-provador-nome>Rosa quartzo</strong></p>
@@ -204,6 +247,23 @@
               <span>Intensidade</span>
               <input type="range" min="20" max="100" value="90" data-provador-intensidade>
             </label>
+          </div>
+
+          <div class="provador-precisao">
+            <p class="provador-diagnostico" data-provador-diagnostico aria-live="polite">
+              <strong data-diagnostico-tom>Medindo o tom do cabelo…</strong>
+              <span data-diagnostico-dica></span>
+            </p>
+            <div class="provador-opcoes">
+              <div class="provador-clarear" role="radiogroup" aria-label="Simulação">
+                <button type="button" role="radio" aria-checked="true" tabindex="0" data-clarear="sim">Com clareamento</button>
+                <button type="button" role="radio" aria-checked="false" tabindex="-1" data-clarear="nao">Só tinta</button>
+              </div>
+              <button type="button" class="provador-ajustar" data-provador-ajustar aria-pressed="false">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.7 3.3a2.4 2.4 0 0 0-3.4 0l-8.4 8.4 3.4 3.4 8.4-8.4a2.4 2.4 0 0 0 0-3.4ZM7.6 13 4.9 15.7c-1 1-1.4 2.6-1 4l.2.5-.9.9 1 .9.9-.8.5.1c1.4.4 3 0 4-1l2.7-2.7L7.6 13Z"/></svg>
+                Ajustar área do cabelo
+              </button>
+            </div>
           </div>
 
           <a class="btn btn-bronze provador-cta" href="#contato" data-wa="Olá, Raquel! Testei a cor Rosa quartzo no provador do site e quero agendar uma avaliação." data-provador-cta>
@@ -221,15 +281,34 @@
             <div class="provador-divisor" data-provador-divisor role="slider" tabindex="0" aria-label="Comparar antes e depois" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="Depois">
               <span class="provador-alca" aria-hidden="true"></span>
             </div>
+            <span class="provador-cursor" data-provador-cursor aria-hidden="true"></span>
             <p class="provador-status" data-provador-status role="status"></p>
           </div>
           <div class="provador-fontes">
             <button type="button" class="provador-fonte" data-fonte="demo" aria-pressed="true">Foto da Raquel</button>
             <button type="button" class="provador-fonte" data-fonte="camera" aria-pressed="false">Usar minha câmera</button>
+            <button type="button" class="provador-fonte provador-capturar" data-provador-capturar hidden>Capturar e ajustar</button>
             <label class="provador-fonte">
               <input class="sr-only" type="file" accept="image/*" data-fonte-arquivo>
               Enviar uma foto
             </label>
+          </div>
+          <div class="provador-edicao" data-provador-edicao hidden>
+            <p class="provador-edicao-dica">Passe o dedo ou o mouse onde a cor deve pegar (Pintar) ou sair (Apagar). Em dourado, a área que recebe a cor.</p>
+            <div class="provador-ferramentas">
+              <div class="provador-segmento" role="radiogroup" aria-label="Pincel">
+                <button type="button" role="radio" aria-checked="true" tabindex="0" data-pincel="add">Pintar</button>
+                <button type="button" role="radio" aria-checked="false" tabindex="-1" data-pincel="remove">Apagar</button>
+              </div>
+              <div class="provador-segmento" role="radiogroup" aria-label="Tamanho do pincel">
+                <button type="button" role="radio" aria-checked="false" tabindex="-1" data-tamanho="9" aria-label="Pincel fino">Fino</button>
+                <button type="button" role="radio" aria-checked="true" tabindex="0" data-tamanho="18" aria-label="Pincel médio">Médio</button>
+                <button type="button" role="radio" aria-checked="false" tabindex="-1" data-tamanho="34" aria-label="Pincel grosso">Grosso</button>
+              </div>
+              <button type="button" class="provador-acao" data-provador-desfazer disabled>Desfazer</button>
+              <button type="button" class="provador-acao" data-provador-restaurar>Restaurar</button>
+              <button type="button" class="btn btn-bronze provador-pronto" data-provador-pronto>Pronto</button>
+            </div>
           </div>
           <p class="provador-privacidade">A câmera e as fotos ficam só no seu aparelho: nada é enviado nem salvo.</p>
         </div>
@@ -238,28 +317,72 @@
 
     <!-- ============================== Resultados ============================== -->
     <section class="section section-dark" id="resultados" aria-labelledby="resultados-title">
-      <div class="container split split-media-last">
-        <div class="split-text">
-          <h2 id="resultados-title" data-split>Mechas em cabelo cacheado</h2>
-          <p class="lead">Um atendimento real, no salão: a luz entra sem desmanchar a curvatura, e os cachos ganham brilho e definição do comprimento às pontas.</p>
-          <p>Cada mecha é pensada para o desenho natural do seu cacho, para que o loiro cresça bonito e a manutenção seja tranquila.</p>
-          <a class="btn btn-gold" href="#contato" data-wa="Olá, Raquel! Vi o vídeo dos cachos iluminados no site e gostaria de agendar uma avaliação.">
-            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-whatsapp"></use></svg>
-            Agendar uma avaliação
-          </a>
+      <div class="container">
+        <div class="section-head">
+          <h2 id="resultados-title" data-split>Cachos que iluminam</h2>
+          <p>Mechas em cabelo cacheado, feitas no salão: a luz entra sem desmanchar a curvatura, e os cachos ganham brilho e definição do comprimento às pontas.</p>
         </div>
 
-        <figure class="pendant pendant-video" data-reveal="swing">
-          <video data-video muted loop playsinline preload="none"
-                 poster="assets/img/cachos-iluminados-poster.jpg" width="720" height="1280"
-                 aria-label="Vídeo: Raquel Melo ajeita os cachos iluminados de uma cliente no salão">
-            <source src="assets/video/raquel-melo-cachos-iluminados.mp4" type="video/mp4">
-          </video>
-          <button class="video-toggle" type="button" data-video-toggle data-state="paused" aria-label="Reproduzir vídeo">
-            <svg class="icon icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
-            <svg class="icon icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
-          </button>
-        </figure>
+        <div class="carrossel" data-carrossel>
+          <div class="carrossel-trilho" data-carrossel-trilho tabindex="0" role="group" aria-roledescription="carrossel" aria-label="Resultados">
+            <figure class="carrossel-item carrossel-video">
+              <video data-video muted loop playsinline preload="none"
+                     poster="assets/img/cachos-iluminados-poster.jpg" width="720" height="1280"
+                     aria-label="Vídeo: Raquel Melo ajeita os cachos iluminados de uma cliente no salão">
+                <source src="assets/video/raquel-melo-cachos-iluminados.mp4" type="video/mp4">
+              </video>
+              <button class="video-toggle" type="button" data-video-toggle data-state="paused" aria-label="Reproduzir vídeo">
+                <svg class="icon icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+                <svg class="icon icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
+              </button>
+              <figcaption>Finalização dos cachos, em vídeo</figcaption>
+            </figure>
+            <figure class="carrossel-item">
+              <picture>
+              <source type="image/avif" sizes="(min-width: 900px) 360px, 74vw" srcset="assets/img/resultado-cachos-1-400.avif 400w, assets/img/resultado-cachos-1-700.avif 700w, assets/img/resultado-cachos-1-1000.avif 1000w">
+              <source type="image/webp" sizes="(min-width: 900px) 360px, 74vw" srcset="assets/img/resultado-cachos-1-400.webp 400w, assets/img/resultado-cachos-1-700.webp 700w, assets/img/resultado-cachos-1-1000.webp 1000w">
+              <img src="assets/img/resultado-cachos-1-700.jpg" sizes="(min-width: 900px) 360px, 74vw" srcset="assets/img/resultado-cachos-1-400.jpg 400w, assets/img/resultado-cachos-1-700.jpg 700w, assets/img/resultado-cachos-1-1000.jpg 1000w"
+                   width="1000" height="1333" loading="lazy" decoding="async"
+                   alt="Cliente com cachos longos e mechas loiras, depois da finalização">
+            </picture>
+              <figcaption>Mechas iluminadas em cachos</figcaption>
+            </figure>
+            <figure class="carrossel-item">
+              <picture>
+              <source type="image/avif" sizes="(min-width: 900px) 360px, 74vw" srcset="assets/img/resultado-cachos-2-400.avif 400w, assets/img/resultado-cachos-2-700.avif 700w, assets/img/resultado-cachos-2-1000.avif 1000w">
+              <source type="image/webp" sizes="(min-width: 900px) 360px, 74vw" srcset="assets/img/resultado-cachos-2-400.webp 400w, assets/img/resultado-cachos-2-700.webp 700w, assets/img/resultado-cachos-2-1000.webp 1000w">
+              <img src="assets/img/resultado-cachos-2-700.jpg" sizes="(min-width: 900px) 360px, 74vw" srcset="assets/img/resultado-cachos-2-400.jpg 400w, assets/img/resultado-cachos-2-700.jpg 700w, assets/img/resultado-cachos-2-1000.jpg 1000w"
+                   width="1000" height="1333" loading="lazy" decoding="async"
+                   alt="Close dos cachos com mechas, com brilho do comprimento às pontas">
+            </picture>
+              <figcaption>Brilho do comprimento às pontas</figcaption>
+            </figure>
+            <figure class="carrossel-item">
+              <picture>
+              <source type="image/avif" sizes="(min-width: 900px) 360px, 74vw" srcset="assets/img/resultado-cachos-3-400.avif 400w, assets/img/resultado-cachos-3-700.avif 700w, assets/img/resultado-cachos-3-1000.avif 1000w">
+              <source type="image/webp" sizes="(min-width: 900px) 360px, 74vw" srcset="assets/img/resultado-cachos-3-400.webp 400w, assets/img/resultado-cachos-3-700.webp 700w, assets/img/resultado-cachos-3-1000.webp 1000w">
+              <img src="assets/img/resultado-cachos-3-700.jpg" sizes="(min-width: 900px) 360px, 74vw" srcset="assets/img/resultado-cachos-3-400.jpg 400w, assets/img/resultado-cachos-3-700.jpg 700w, assets/img/resultado-cachos-3-1000.jpg 1000w"
+                   width="1000" height="1333" loading="lazy" decoding="async"
+                   alt="Raquel Melo ajeitando os cachos iluminados da cliente">
+            </picture>
+              <figcaption>Ajuste final com a Raquel</figcaption>
+            </figure>
+          </div>
+          <div class="carrossel-controles">
+            <button class="carrossel-seta" type="button" data-carrossel-anterior aria-label="Resultado anterior">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="carrossel-pontos" data-carrossel-pontos></div>
+            <button class="carrossel-seta" type="button" data-carrossel-proximo aria-label="Próximo resultado">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <a class="btn btn-gold resultados-cta" href="#contato" data-wa="Olá, Raquel! Vi os resultados no site e gostaria de agendar uma avaliação.">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-whatsapp"></use></svg>
+          Agendar uma avaliação
+        </a>
       </div>
     </section>
 
@@ -418,36 +541,57 @@
 
     <!-- ============================== Contato ============================== -->
     <section class="section section-dark" id="contato" aria-labelledby="contato-title">
-      <div class="container split split-media-last">
-        <div class="split-text">
-          <h2 id="contato-title" data-split>Agende seu horário</h2>
-          <p class="lead">Atendimento com hora marcada. Chame no WhatsApp e conte o que você deseja.</p>
-          <a class="btn btn-gold" href="#contato" data-wa="Olá, Raquel! Vim pelo site e gostaria de agendar um horário." data-contato-cta hidden>
-            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-whatsapp"></use></svg>
-            Agendar pelo WhatsApp
-          </a>
-
-          <dl class="contato-lista" data-reveal="cascade">
-            <div class="contato-item" data-contato="whatsapp" hidden><dt>WhatsApp</dt><dd></dd></div>
-            <div class="contato-item" data-contato="instagram" hidden><dt>Instagram</dt><dd></dd></div>
-            <div class="contato-item" data-contato="endereco" hidden><dt>Endereço</dt><dd></dd></div>
-            <div class="contato-item" data-contato="horarios" hidden><dt>Horários</dt><dd></dd></div>
-          </dl>
-          <p class="contato-pendente" data-contato-pendente hidden>WhatsApp, endereço e horários serão publicados aqui em breve.</p>
+      <div class="container">
+        <div class="section-head">
+          <h2 id="contato-title" data-split>Horários e como chegar</h2>
+          <p>Atendimento com hora marcada. Chame no WhatsApp, conte o que você deseja e escolha o melhor horário.</p>
         </div>
 
-        <figure class="pendant pendant-3x5" data-reveal="swing">
-          <picture>
-            <source type="image/avif" sizes="(min-width: 900px) 420px, 84vw"
-                    srcset="assets/img/raquel-melo-pb-500.avif 500w, assets/img/raquel-melo-pb-800.avif 800w, assets/img/raquel-melo-pb-1100.avif 1100w">
-            <source type="image/webp" sizes="(min-width: 900px) 420px, 84vw"
-                    srcset="assets/img/raquel-melo-pb-500.webp 500w, assets/img/raquel-melo-pb-800.webp 800w, assets/img/raquel-melo-pb-1100.webp 1100w">
-            <img src="assets/img/raquel-melo-pb-800.jpg" sizes="(min-width: 900px) 420px, 84vw"
-                 srcset="assets/img/raquel-melo-pb-500.jpg 500w, assets/img/raquel-melo-pb-800.jpg 800w, assets/img/raquel-melo-pb-1100.jpg 1100w"
-                 width="800" height="1422" loading="lazy" decoding="async"
-                 alt="Retrato em preto e branco de Raquel Melo, de blazer, em um elevador espelhado">
-          </picture>
-        </figure>
+        <div class="contato-grid">
+          <div class="contato-card">
+            <h3 class="contato-titulo">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-relogio"></use></svg>
+              Horário de atendimento
+            </h3>
+            <table class="horarios" data-horarios hidden><tbody></tbody></table>
+            <p class="contato-vazio" data-horarios-vazio>Os horários serão publicados aqui em breve.</p>
+            <p class="contato-aviso">Atendimento somente com horário marcado</p>
+
+            <div class="contato-bloco" data-endereco-bloco hidden>
+              <h3 class="contato-titulo">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-pin"></use></svg>
+                Endereço
+              </h3>
+              <p data-endereco-texto></p>
+            </div>
+
+            <div class="contato-bloco" data-pagamento-bloco hidden>
+              <h3 class="contato-titulo">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-cartao"></use></svg>
+                Formas de pagamento
+              </h3>
+              <p data-pagamento-texto></p>
+            </div>
+          </div>
+
+          <div class="contato-mapa" data-mapa>
+            <div class="mapa-capa" data-mapa-capa>
+              <img class="mapa-selo" src="assets/img/logo-seal-light.svg" alt="" width="132" height="132" loading="lazy">
+              <p class="mapa-texto" data-mapa-texto>WhatsApp, endereço e horários serão publicados aqui em breve.</p>
+              <button class="btn btn-outline" type="button" data-mapa-abrir hidden>
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-pin"></use></svg>
+                Ver o mapa
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="contato-botoes" data-contato-botoes>
+          <a class="contato-botao contato-botao-destaque" href="#contato" data-wa="Olá, Raquel! Vim pelo site e gostaria de agendar um horário.">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-whatsapp"></use></svg>
+            <span><strong>Agendar agora</strong><small>Escolha seu horário</small></span>
+          </a>
+        </div>
       </div>
     </section>
   </main>
@@ -459,7 +603,10 @@
           <img class="moeda-face" src="assets/img/logo-seal-light.svg" alt="Raquel Melo Conceito de Beleza" width="132" height="132" loading="lazy" draggable="false">
           <span class="moeda-verso" aria-hidden="true"><img src="assets/img/logo-monogram-light.svg" alt="" width="114" height="101" loading="lazy" draggable="false"></span>
         </div>
-        <p>Coloração, mechas e tratamentos capilares feitos sob medida.</p>
+        <div>
+          <p>Coloração, mechas e tratamentos capilares feitos sob medida.</p>
+          <p class="footer-onde" data-footer-onde hidden></p>
+        </div>
       </div>
       <nav class="footer-nav" aria-label="Rodapé">
         <ul>
@@ -492,6 +639,34 @@
   </a>
 
   <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="icon-instagram" viewBox="0 0 24 24">
+      <rect x="3.2" y="3.2" width="17.6" height="17.6" rx="5" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <circle cx="12" cy="12" r="4.1" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <circle cx="17.3" cy="6.7" r="1.1" fill="currentColor"/>
+    </symbol>
+    <symbol id="icon-relogio" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <path d="M12 7.4V12l3.2 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-pin" viewBox="0 0 24 24">
+      <path d="M12 21s-6.6-6-6.6-11.2a6.6 6.6 0 1 1 13.2 0C18.6 15 12 21 12 21Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <circle cx="12" cy="9.8" r="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    </symbol>
+    <symbol id="icon-cartao" viewBox="0 0 24 24">
+      <rect x="3" y="5.5" width="18" height="13" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <path d="M3 10h18M7 15h4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-estrela" viewBox="0 0 24 24">
+      <path d="m12 3.6 2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="icon-rota" viewBox="0 0 24 24">
+      <path d="M12 3.2 20.8 12 12 20.8 3.2 12Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M9.4 14v-2.4c0-.6.4-1 1-1h4.2m-1.8-1.9 1.9 1.9-1.9 1.9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="icon-carro" viewBox="0 0 24 24">
+      <path d="M5 16.5V12l1.8-4.6c.3-.7.9-1.1 1.6-1.1h7.2c.7 0 1.3.4 1.6 1.1L19 12v4.5M5 12h14M5 16.5h14v1.8a.9.9 0 0 1-.9.9h-1.4a.9.9 0 0 1-.9-.9v-1.8M5 16.5v1.8c0 .5.4.9.9.9h1.4c.5 0 .9-.4.9-.9v-1.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      <circle cx="8" cy="14.2" r=".9" fill="currentColor"/><circle cx="16" cy="14.2" r=".9" fill="currentColor"/>
+    </symbol>
     <symbol id="icon-whatsapp" viewBox="0 0 24 24">
       <path fill="currentColor" d="M12.04 2a9.9 9.9 0 0 0-8.5 14.97L2 22l5.17-1.5A9.93 9.93 0 1 0 12.04 2Zm0 18.1a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.07.9.92-2.99-.2-.31a8.2 8.2 0 1 1 6.83 3.73Zm4.5-6.14c-.25-.12-1.46-.72-1.69-.8-.23-.08-.39-.12-.55.12-.16.25-.63.8-.78.96-.14.16-.29.18-.53.06a6.7 6.7 0 0 1-1.98-1.22 7.4 7.4 0 0 1-1.37-1.7c-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.15.16-.25.25-.41.08-.17.04-.31-.02-.43-.06-.13-.55-1.33-.76-1.82-.2-.48-.4-.41-.55-.42h-.47a.9.9 0 0 0-.65.31 2.74 2.74 0 0 0-.86 2.04c0 1.2.88 2.37 1 2.53.12.17 1.73 2.64 4.2 3.7.58.25 1.04.4 1.4.52.59.19 1.12.16 1.55.1.47-.07 1.46-.6 1.66-1.18.21-.58.21-1.07.15-1.18-.06-.1-.22-.16-.47-.29Z"/>
     </symbol>
