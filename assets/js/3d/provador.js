@@ -89,8 +89,11 @@ void main() {
     cobertura = clamp(alvo / max(uAlvo, 0.003), 0.3, 1.0);
   }
 
-  // a cor nova mant\xE9m a textura do fio: brilho e sombra proporcionais ao original
-  float nl = alvo * pow(l / max(uMedia, 0.003), 0.72);
+  // a cor nova mant\xE9m a textura do fio: brilho e sombra proporcionais ao original.
+  // O brilho acima da m\xE9dia \xE9 comprimido: o reflexo do fio continua, mas o que \xE9 claro
+  // demais para ser cabelo (camisa, parede entre as mechas) n\xE3o vira um contorno aceso.
+  float r = pow(l / max(uMedia, 0.003), 0.72);
+  float nl = alvo * (r <= 1.0 ? r : 1.0 + (r - 1.0) / (1.0 + (r - 1.0) * 0.35));
   vec3 tinta = uTinta * (nl / max(luma(uTinta), 0.003));
   tinta = tinta / (1.0 + max(0.0, luma(tinta) - 0.9));
   tinta = mix(l3 * (nl / max(l, 0.0005)), tinta, cobertura);

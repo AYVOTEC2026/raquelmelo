@@ -1598,14 +1598,18 @@ p { margin: 0; text-wrap: pretty; }
 .nota-google strong { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; line-height: 1; }
 .nota-estrelas { color: var(--gold); font-size: .8125rem; letter-spacing: .12em; }
 
+/* A entrada anima "translate" (e não "transform"): assim o selo e a nota
+   continuam à frente do retrato no espaço 3D depois que a animação termina. */
 @media (prefers-reduced-motion: no-preference) {
   .selo-giratorio,
-  .nota-google { animation: surge 1s var(--ease-out) both; animation-delay: 1.3s; }
+  .nota-google { animation: surge-solto 1s var(--ease-out) both; animation-delay: 1.3s; }
 }
+@keyframes surge-solto { from { opacity: 0; translate: 0 14px; } to { opacity: 1; translate: 0 0; } }
 @media (prefers-reduced-motion: reduce) {
   .selo-anel { animation: none; }
 }
 .anim .selo-giratorio { transform: translateZ(60px); }
+.anim .nota-google { transform: translateX(-62%) translateZ(60px); }
 
 @media (max-width: 899px) {
   .selo-giratorio { width: 82px; bottom: 4%; left: calc(50% - var(--pw) / 2 - 22px); }
@@ -1641,8 +1645,8 @@ p { margin: 0; text-wrap: pretty; }
 .faixa-fita-b {
   top: 40%;
   z-index: 1;
-  background: var(--champagne);
-  color: var(--bronze);
+  background: linear-gradient(90deg, #C9973F, #EBCB86 30%, #D9A84C 62%, #F0D69A 86%, #C9973F);
+  color: var(--espresso);
   transform: translateY(-50%) rotate(2deg);
 }
 .faixa-trilho { display: inline-flex; animation: rolar 50s linear infinite; }
@@ -1872,16 +1876,22 @@ p { margin: 0; text-wrap: pretty; }
 
 .contato-vazio { margin-top: 12px; color: var(--ivory-soft); }
 
+/* Aviso, não botão: sem forma de pílula nem fundo cheio */
 .contato-aviso {
-  margin-top: 18px;
-  padding: 12px 16px;
-  border-radius: 999px;
-  background: var(--gold);
-  color: var(--espresso);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 12px 14px;
+  border: 1px solid rgb(217 168 76 / .32);
+  border-radius: 12px;
+  background: rgb(217 168 76 / .07);
+  color: var(--gold-soft);
   font-size: .875rem;
-  font-weight: 600;
-  text-align: center;
+  font-weight: 500;
+  line-height: 1.45;
 }
+.contato-aviso .icon { flex: 0 0 auto; width: 18px; height: 18px; }
 
 .contato-bloco { margin-top: 26px; }
 .contato-bloco p { margin-top: 8px; color: var(--ivory); }
