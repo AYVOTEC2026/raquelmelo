@@ -8,13 +8,13 @@
 
 window.SITE_CONFIG = {
   // WhatsApp com DDI 55 + DDD + número, só dígitos. Ex.: "5527999998888"
-  whatsapp: "",
+  whatsapp: "5585987261704",
 
   // Mensagem que aparece pronta ao abrir o WhatsApp pelos botões genéricos
   mensagemPadrao: "Olá, Raquel! Vim pelo site e gostaria de agendar um horário.",
 
   // Usuário do Instagram, sem o @. Ex.: "raquelmelo.conceitodebeleza"
-  instagram: "",
+  instagram: "raquelmeloqueiroz",
 
   // Cidade, para aparecer no topo do site. Ex.: "Vitória · ES"
   cidade: "Fortaleza · CE",
