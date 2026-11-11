@@ -32,6 +32,7 @@
     return svg;
   };
   const suave = () => (reduceMotion.matches ? 'auto' : 'smooth');
+  const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
 
   /* ---------- Dados do salão ---------- */
 
@@ -72,13 +73,15 @@
   const listaPt = (itens) => (itens.length <= 1 ? itens.join('') : itens.slice(0, -1).join(', ') + ' e ' + itens[itens.length - 1]);
 
   // Sem WhatsApp configurado, os botões "Agendar" continuam levando aos horários.
-  if (waDigits) {
-    $$('[data-wa]').forEach((a) => {
+  const aplicarWhats = (raiz) => {
+    if (!waDigits) return;
+    $$('[data-wa]', raiz).forEach((a) => {
       a.href = waUrl(a.dataset.wa);
       a.target = '_blank';
       a.rel = 'noopener';
     });
-  }
+  };
+  aplicarWhats(document);
 
   $$('[data-instagram-link]').forEach((a) => {
     if (!igUrl) return;
@@ -322,8 +325,9 @@
 
   const linksNav = $$('.nav a[href^="#"]');
   const linkDe = new Map(linksNav.map((a) => [a.getAttribute('href').slice(1), a]));
+  let espiao = null;
   if ('IntersectionObserver' in window) {
-    const espiao = new IntersectionObserver((entries) => {
+    espiao = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
         linksNav.forEach((a) => { a.classList.remove('is-ativo'); a.removeAttribute('aria-current'); });
@@ -343,7 +347,7 @@
 
   /* ---------- Carrosséis (arrastar, setas e teclado) ---------- */
 
-  $$('[data-carrossel]').forEach((car) => {
+  const iniciarCarrossel = (car) => {
     const trilho = $('[data-trilho]', car);
     const itens = Array.from(trilho.children);
     const anterior = $('[data-anterior]', car);
@@ -409,7 +413,8 @@
         if (arrastou) { e.preventDefault(); e.stopPropagation(); arrastou = false; }
       }, true);
     }
-  });
+  };
+  $$('[data-carrossel]').forEach(iniciarCarrossel);
 
   /* ---------- Vídeos: toca sem som quando aparece na tela ---------- */
 
@@ -509,6 +514,7 @@
 
   const topo = $('[data-topo]');
   const derivas = motion ? $$('[data-deriva]') : [];
+  const registrarDerivas = (raiz) => { if (motion) derivas.push(...$$('[data-deriva]', raiz)); };
   // a foto do topo desce devagar com a rolagem só no computador (no celular ela fica no fim do topo)
   const fotoArea = motion && window.matchMedia('(min-width: 1080px)').matches ? $('.hero-foto-area') : null;
   let rolagemAgendada = false;
@@ -535,37 +541,250 @@
 
   /* ---------- Revelação ao rolar ---------- */
 
-  if (motion) {
-    const revelar = new IntersectionObserver((entries) => {
+  const revelar = motion
+    ? new IntersectionObserver((entries) => {
       entries.forEach((e) => {
         if (!e.isIntersecting) return;
         e.target.classList.add('is-visivel');
         revelar.unobserve(e.target);
       });
-    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
-    $$('[data-revelar]').forEach((n) => revelar.observe(n));
-  }
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 })
+    : null;
+  const observarRevelar = (raiz) => { if (revelar) $$('[data-revelar]', raiz).forEach((n) => revelar.observe(n)); };
+  observarRevelar(document);
 
   /* ---------- Polaroids inclinam com o mouse ---------- */
 
-  if (motion && mouseFino) {
-    $$('.polaroid').forEach((p) => {
-      p.addEventListener('pointermove', (e) => {
-        if (e.pointerType !== 'mouse') return;
-        const r = p.getBoundingClientRect();
-        const x = (e.clientX - r.left) / r.width - 0.5;
-        const y = (e.clientY - r.top) / r.height - 0.5;
-        p.classList.add('is-inclinando');
-        p.style.setProperty('--ry', (x * 10).toFixed(2) + 'deg');
-        p.style.setProperty('--rx', (-y * 8).toFixed(2) + 'deg');
-      });
-      p.addEventListener('pointerleave', () => {
-        p.classList.remove('is-inclinando');
-        p.style.removeProperty('--rx');
-        p.style.removeProperty('--ry');
-      });
+  const inclinar = (p) => {
+    if (!motion || !mouseFino) return;
+    p.addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      const r = p.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      p.classList.add('is-inclinando');
+      p.style.setProperty('--ry', (x * 10).toFixed(2) + 'deg');
+      p.style.setProperty('--rx', (-y * 8).toFixed(2) + 'deg');
     });
-  }
+    p.addEventListener('pointerleave', () => {
+      p.classList.remove('is-inclinando');
+      p.style.removeProperty('--rx');
+      p.style.removeProperty('--ry');
+    });
+  };
+  $$('.polaroid').forEach(inclinar);
+
+  /* ---------- Fotos: vêm de assets/data/fotos.json (o painel da Raquel edita esse arquivo) ----------
+     Sem foto, sem card: espaço vazio some e o resto da página se ajusta. */
+
+  const TIPOS = { avif: 'image/avif', webp: 'image/webp', jpg: 'image/jpeg' };
+  const LIMITES = { topo: 1, sobre: 3, galeria: 15, rodape: 3 };
+  const fotoValida = (f) => !!f && typeof f.arquivo === 'string' &&
+    /^assets\/(img|fotos)\/[a-z0-9][a-z0-9-]*$/.test(f.arquivo) &&
+    Array.isArray(f.larguras) && f.larguras.length > 0 &&
+    f.larguras.every((w) => Number.isInteger(w) && w > 0 && w <= 4000);
+  const fotosDe = (lista, limite) => (Array.isArray(lista) ? lista.filter(fotoValida).slice(0, limite) : []);
+  const formatosDe = (f) => {
+    const l = (Array.isArray(f.formatos) ? f.formatos : []).filter((x) => TIPOS[x]);
+    return l.length ? l : ['jpg'];
+  };
+  const textoAlt = (f, reserva) => texto(f.descricao) || ((f.antesDepois ? 'Antes e depois: ' : '') + (texto(f.legenda) || reserva || 'foto do salão'));
+
+  const montarFoto = (f, { sizes, prioridade = false, alt } = {}) => {
+    const larguras = [...f.larguras].sort((a, b) => a - b);
+    const formatos = formatosDe(f);
+    const principal = formatos.includes('jpg') ? 'jpg' : formatos[formatos.length - 1];
+    const srcset = (fmt) => larguras.map((w) => `${f.arquivo}-${w}.${fmt} ${w}w`).join(', ');
+    const pic = document.createElement('picture');
+    formatos.filter((fmt) => fmt !== principal).forEach((fmt) => {
+      pic.append(el('source', { type: TIPOS[fmt], srcset: srcset(fmt), sizes }));
+    });
+    const img = el('img', {
+      src: `${f.arquivo}-${larguras[Math.min(1, larguras.length - 1)]}.${principal}`,
+      srcset: srcset(principal),
+      sizes,
+      alt: alt === undefined ? textoAlt(f) : alt,
+      decoding: 'async',
+      draggable: 'false',
+    });
+    if (Number(f.largura) > 0 && Number(f.altura) > 0) {
+      img.width = Math.round(f.largura);
+      img.height = Math.round(f.altura);
+    }
+    if (prioridade) img.setAttribute('fetchpriority', 'high');
+    else img.loading = 'lazy';
+    pic.append(img);
+    return pic;
+  };
+
+  // Foto ampliada (ao tocar numa foto das galerias)
+  const dialogo = $('[data-ampliar]');
+  const ampliar = (() => {
+    if (!dialogo || typeof dialogo.showModal !== 'function') return () => {};
+    const img = $('[data-ampliar-img]', dialogo);
+    const legenda = $('[data-ampliar-legenda]', dialogo);
+    const anterior = $('[data-ampliar-anterior]', dialogo);
+    const proxima = $('[data-ampliar-proxima]', dialogo);
+    let grupo = null;
+    let indice = 0;
+    const mostrar = () => {
+      const f = grupo.fotos[indice];
+      const maior = Math.max(...f.larguras);
+      const fmt = formatosDe(f).includes('webp') ? 'webp' : (formatosDe(f).includes('jpg') ? 'jpg' : formatosDe(f)[0]);
+      img.src = `${f.arquivo}-${maior}.${fmt}`;
+      img.alt = textoAlt(f, grupo.nome);
+      img.width = Number(f.largura) || 1080;
+      img.height = Number(f.altura) || 1080;
+      legenda.textContent = [texto(f.legenda) || grupo.nome, (indice + 1) + ' de ' + grupo.fotos.length].join(' · ');
+      anterior.disabled = indice === 0;
+      proxima.disabled = indice === grupo.fotos.length - 1;
+      anterior.hidden = proxima.hidden = grupo.fotos.length < 2;
+    };
+    const ir = (passo) => {
+      const novo = clamp(indice + passo, 0, grupo.fotos.length - 1);
+      if (novo === indice) return;
+      indice = novo;
+      mostrar();
+    };
+    anterior.addEventListener('click', () => ir(-1));
+    proxima.addEventListener('click', () => ir(1));
+    $('[data-ampliar-fechar]', dialogo).addEventListener('click', () => dialogo.close());
+    // tocar fora da foto fecha
+    dialogo.addEventListener('click', (e) => { if (e.target === dialogo) dialogo.close(); });
+    dialogo.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') ir(-1);
+      if (e.key === 'ArrowRight') ir(1);
+    });
+    dialogo.addEventListener('close', () => html.classList.remove('foto-aberta'));
+    // deslizar para o lado troca de foto
+    let x0 = null;
+    dialogo.addEventListener('pointerdown', (e) => { x0 = e.clientX; });
+    dialogo.addEventListener('pointerup', (e) => {
+      if (x0 === null) return;
+      const dx = e.clientX - x0;
+      x0 = null;
+      if (Math.abs(dx) > 50) ir(dx < 0 ? 1 : -1);
+    });
+    return (g, i) => {
+      grupo = g;
+      indice = i;
+      mostrar();
+      html.classList.add('foto-aberta');
+      dialogo.showModal();
+    };
+  })();
+
+  const cartaoGaleria = (f, grupo, i) => {
+    const fig = el('figure', { class: 'polaroid polaroid-galeria' });
+    const legenda = texto(f.legenda);
+    const botao = el('button', { class: 'polaroid-abrir', type: 'button', 'aria-label': 'Ampliar a foto: ' + (legenda || grupo.nome) });
+    botao.append(montarFoto(f, { sizes: '(min-width: 1080px) 400px, 72vw', alt: textoAlt(f, grupo.nome) }));
+    if (f.antesDepois) {
+      botao.append(el('span', { class: 'tag tag-antes', 'aria-hidden': 'true' }, 'Antes'),
+        el('span', { class: 'tag tag-depois', 'aria-hidden': 'true' }, 'Depois'));
+    }
+    botao.addEventListener('click', () => ampliar(grupo, i));
+    fig.append(botao);
+    if (legenda) fig.append(el('figcaption', { class: 'etiqueta' }, legenda));
+    return fig;
+  };
+
+  const slug = (t) => semAcento(String(t || '')).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'galeria';
+
+  const montarSite = (dados) => {
+    const d = dados && typeof dados === 'object' ? dados : {};
+
+    // Topo
+    const hero = $('.hero');
+    const fotoTopo = fotosDe(d.topo, LIMITES.topo)[0];
+    if (fotoTopo) $('[data-hero-foto]').append(montarFoto(fotoTopo, { sizes: '(min-width: 1080px) 540px, 92vw', prioridade: true }));
+    else hero.classList.add('sem-foto');
+
+    // Sobre: a primeira foto fica grande (arco); as outras, menores e em preto e branco
+    const caixaSobre = $('[data-sobre-fotos]');
+    const fotosSobre = fotosDe(d.sobre, LIMITES.sobre);
+    caixaSobre.dataset.qtd = String(fotosSobre.length);
+    if (!fotosSobre.length) $('#sobre').classList.add('sem-fotos');
+    fotosSobre.forEach((f, i) => {
+      const fig = el('figure', { class: 'foto ' + (i === 0 ? 'foto-arco sobre-foto-principal' : 'sobre-foto-lado'), 'data-revelar': '' });
+      if (i) fig.style.setProperty('--d', (i * 110) + 'ms');
+      fig.append(montarFoto(f, { sizes: i === 0 ? '(min-width: 1080px) 360px, 50vw' : '(min-width: 1080px) 300px, 40vw' }));
+      caixaSobre.append(fig);
+    });
+
+    // Galerias: só entram as que têm foto
+    const modelo = $('#modelo-galeria');
+    const videosSec = $('#videos');
+    const galerias = (Array.isArray(d.galerias) ? d.galerias : [])
+      .map((g) => ({ g, fotos: fotosDe(g && g.fotos, LIMITES.galeria) }))
+      .filter((x) => x.fotos.length);
+    const usados = new Set();
+    galerias.forEach(({ g, fotos }, i) => {
+      const sec = modelo.content.firstElementChild.cloneNode(true);
+      let id = i === 0 ? 'resultados' : 'galeria-' + slug(g.id || g.script);
+      while (usados.has(id) || (i > 0 && document.getElementById(id))) id += '-' + i;
+      usados.add(id);
+      sec.id = id;
+      // cores alternadas, contando de trás para frente: a última galeria sempre contrasta com os vídeos
+      sec.classList.add((galerias.length - 1 - i) % 2 === 0 ? 'galeria-champanhe' : 'galeria-clara');
+
+      const nome = [texto(g.script), texto(g.serif)].filter(Boolean).join(' ') || 'Resultados';
+      const titulo = $('.titulo-misto', sec);
+      titulo.id = id + '-titulo';
+      sec.setAttribute('aria-labelledby', titulo.id);
+      $('.script', titulo).textContent = texto(g.script);
+      $('.serif', titulo).textContent = texto(g.serif);
+      if (!texto(g.script)) $('.script', titulo).remove();
+      $('.marca-dagua', sec).textContent = texto(g.marcaDagua) || texto(g.script) || texto(g.serif);
+      const sub = $('.subtitulo-caps', sec);
+      sub.textContent = texto(g.subtitulo);
+      sub.hidden = !texto(g.subtitulo);
+      const par = $('.galeria-texto', sec);
+      par.textContent = texto(g.texto);
+      par.hidden = !texto(g.texto);
+
+      const car = $('[data-carrossel]', sec);
+      car.setAttribute('aria-label', 'Fotos de ' + nome.toLowerCase());
+      const trilho = $('[data-trilho]', car);
+      trilho.id = id + '-trilho';
+      $$('.carrossel-seta', car).forEach((b) => b.setAttribute('aria-controls', trilho.id));
+      const grupo = { nome, fotos };
+      fotos.forEach((f, k) => trilho.append(cartaoGaleria(f, grupo, k)));
+
+      $('[data-wa]', sec).dataset.wa = `Olá, Raquel! Vi as fotos de ${nome.toLowerCase()} no site e gostaria de agendar uma avaliação.`;
+      videosSec.before(sec);
+      aplicarWhats(sec);
+      iniciarCarrossel(car);
+      observarRevelar(sec);
+      registrarDerivas(sec);
+      $$('.polaroid', sec).forEach(inclinar);
+      if (espiao) espiao.observe(sec);
+      if (i > 0 && linkDe.get('resultados')) linkDe.set(id, linkDe.get('resultados'));
+    });
+    // sem galeria, o link "Resultados" sai dos menus
+    if (!galerias.length) $$('a[href="#resultados"]').forEach((a) => { (a.closest('li') || a).hidden = true; });
+
+    // Polaroids do rodapé (montagem de antes e depois mostra só o "depois")
+    const caixaRodape = $('[data-rodape-fotos]');
+    const fotosRodape = fotosDe(d.rodape, LIMITES.rodape);
+    caixaRodape.dataset.qtd = String(fotosRodape.length);
+    if (!fotosRodape.length) {
+      caixaRodape.hidden = true;
+      caixaRodape.parentElement.classList.add('sem-polaroids');
+    }
+    fotosRodape.forEach((f) => {
+      const moldura = el('span', { class: 'polaroid-mini' + (f.antesDepois ? ' so-depois' : '') });
+      moldura.append(montarFoto(f, { sizes: '200px', alt: '' }));
+      caixaRodape.append(moldura);
+    });
+
+    observarRevelar($('#sobre'));
+    aoRolar();
+  };
+
+  Promise.resolve(window.__fotos || fetch('assets/data/fotos.json', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)))
+    .catch(() => null)
+    .then(montarSite);
 
   /* ---------- Selo do topo: dá para girar com o mouse ---------- */
 

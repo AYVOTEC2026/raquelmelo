@@ -1,0 +1,349 @@
+{
+  "versao": 1,
+  "atualizado": "2026-11-10T12:00:00Z",
+  "topo": [
+    {
+      "id": "retrato",
+      "arquivo": "assets/img/raquel-melo-retrato",
+      "larguras": [
+        400,
+        700,
+        1000
+      ],
+      "formatos": [
+        "avif",
+        "webp",
+        "jpg"
+      ],
+      "largura": 700,
+      "altura": 1244,
+      "antesDepois": false,
+      "legenda": "",
+      "descricao": "Raquel Melo sentada em uma poltrona, de camisa branca e blazer bege"
+    }
+  ],
+  "sobre": [
+    {
+      "id": "colorista",
+      "arquivo": "assets/img/raquel-melo-colorista",
+      "larguras": [
+        500,
+        800,
+        1100
+      ],
+      "formatos": [
+        "avif",
+        "webp",
+        "jpg"
+      ],
+      "largura": 800,
+      "altura": 1200,
+      "antesDepois": false,
+      "legenda": "",
+      "descricao": "Raquel Melo sorrindo no salão, segurando um pincel de coloração"
+    },
+    {
+      "id": "pb",
+      "arquivo": "assets/img/raquel-melo-pb",
+      "larguras": [
+        500,
+        800,
+        1100
+      ],
+      "formatos": [
+        "avif",
+        "webp",
+        "jpg"
+      ],
+      "largura": 800,
+      "altura": 1422,
+      "antesDepois": false,
+      "legenda": "",
+      "descricao": "Retrato de Raquel Melo, de blazer, no elevador"
+    },
+    {
+      "id": "salao",
+      "arquivo": "assets/img/raquel-melo-salao",
+      "larguras": [
+        500,
+        800,
+        1100
+      ],
+      "formatos": [
+        "avif",
+        "webp",
+        "jpg"
+      ],
+      "largura": 800,
+      "altura": 1200,
+      "antesDepois": false,
+      "legenda": "",
+      "descricao": "Raquel Melo sentada em um sofá, vestindo conjunto preto"
+    }
+  ],
+  "galerias": [
+    {
+      "id": "morena-iluminada",
+      "script": "Morena",
+      "serif": "iluminada",
+      "subtitulo": "Reflexos sob medida para a sua base",
+      "texto": "Luzes em tons de caramelo, mel e chocolate que valorizam a base escura, com degradê suave, brilho e movimento.",
+      "fotos": [
+        {
+          "id": "ad04",
+          "arquivo": "assets/fotos/antes-depois-04",
+          "larguras": [
+            600,
+            1080
+          ],
+          "formatos": [
+            "avif",
+            "webp",
+            "jpg"
+          ],
+          "largura": 1080,
+          "altura": 1080,
+          "antesDepois": true,
+          "legenda": "Morena iluminada",
+          "descricao": "Antes e depois: cabelo castanho escuro e liso ganha luzes caramelo e ondas"
+        },
+        {
+          "id": "ad01",
+          "arquivo": "assets/fotos/antes-depois-01",
+          "larguras": [
+            600,
+            1080
+          ],
+          "formatos": [
+            "avif",
+            "webp",
+            "jpg"
+          ],
+          "largura": 1080,
+          "altura": 1080,
+          "antesDepois": true,
+          "legenda": "Mechas caramelo",
+          "descricao": "Antes e depois: cabelo castanho escuro ganha mechas caramelo que iluminam o rosto"
+        },
+        {
+          "id": "ad07",
+          "arquivo": "assets/fotos/antes-depois-07",
+          "larguras": [
+            600,
+            1080
+          ],
+          "formatos": [
+            "avif",
+            "webp",
+            "jpg"
+          ],
+          "largura": 1080,
+          "altura": 1080,
+          "antesDepois": true,
+          "legenda": "Reflexos caramelo",
+          "descricao": "Antes e depois: cabelo escuro com pontas desbotadas fica castanho com reflexos caramelo e ondas"
+        },
+        {
+          "id": "ad10",
+          "arquivo": "assets/fotos/antes-depois-10",
+          "larguras": [
+            600,
+            1080
+          ],
+          "formatos": [
+            "avif",
+            "webp",
+            "jpg"
+          ],
+          "largura": 1080,
+          "altura": 1080,
+          "antesDepois": true,
+          "legenda": "Degradê caramelo",
+          "descricao": "Antes e depois: cabelo castanho armado fica liso, com degradê caramelo nas pontas"
+        },
+        {
+          "id": "ad08",
+          "arquivo": "assets/fotos/antes-depois-08",
+          "larguras": [
+            600,
+            1080
+          ],
+          "formatos": [
+            "avif",
+            "webp",
+            "jpg"
+          ],
+          "largura": 1080,
+          "altura": 1080,
+          "antesDepois": true,
+          "legenda": "Castanho iluminado",
+          "descricao": "Antes e depois: cabelo acobreado desbotado fica castanho com luzes suaves"
+        },
+        {
+          "id": "ad05",
+          "arquivo": "assets/fotos/antes-depois-05",
+          "larguras": [
+            600,
+            1080
+          ],
+          "formatos": [
+            "avif",
+            "webp",
+            "jpg"
+          ],
+          "largura": 1080,
+          "altura": 1080,
+          "antesDepois": true,
+          "legenda": "Cor uniforme e brilho",
+          "descricao": "Antes e depois: cabelo longo com pontas claras fica castanho uniforme, com brilho e ondas"
+        }
+      ]
+    },
+    {
+      "id": "transformacoes",
+      "script": "Transformações",
+      "serif": "de cor e brilho",
+      "subtitulo": "Loiros, ruivos e muito brilho",
+      "texto": "Do loiro claro ao ruivo acobreado: cada transformação é planejada para o seu fio, com cuidado com a saúde do cabelo do começo ao fim.",
+      "fotos": [
+        {
+          "id": "ad03",
+          "arquivo": "assets/fotos/antes-depois-03",
+          "larguras": [
+            600,
+            1080
+          ],
+          "formatos": [
+            "avif",
+            "webp",
+            "jpg"
+          ],
+          "largura": 1080,
+          "altura": 1080,
+          "antesDepois": true,
+          "legenda": "Loiro claro",
+          "descricao": "Antes e depois: loiro ondulado com raiz escura fica loiro claro, liso e uniforme"
+        },
+        {
+          "id": "ad02",
+          "arquivo": "assets/fotos/antes-depois-02",
+          "larguras": [
+            600,
+            1080
+          ],
+          "formatos": [
+            "avif",
+            "webp",
+            "jpg"
+          ],
+          "largura": 1080,
+          "altura": 1080,
+          "antesDepois": true,
+          "legenda": "Mechas douradas",
+          "descricao": "Antes e depois: cabelo cacheado grisalho fica liso, com mechas douradas"
+        },
+        {
+          "id": "ad06",
+          "arquivo": "assets/fotos/antes-depois-06",
+          "larguras": [
+            600,
+            1080
+          ],
+          "formatos": [
+            "avif",
+            "webp",
+            "jpg"
+          ],
+          "largura": 1080,
+          "altura": 1080,
+          "antesDepois": true,
+          "legenda": "Ruivo acobreado",
+          "descricao": "Antes e depois: cabelo ruivo com cor irregular fica acobreado, liso e com brilho"
+        },
+        {
+          "id": "ad09",
+          "arquivo": "assets/fotos/antes-depois-09",
+          "larguras": [
+            600,
+            1080
+          ],
+          "formatos": [
+            "avif",
+            "webp",
+            "jpg"
+          ],
+          "largura": 1080,
+          "altura": 1080,
+          "antesDepois": true,
+          "legenda": "Liso com brilho",
+          "descricao": "Antes e depois: cabelo preto armado fica liso e brilhante"
+        }
+      ]
+    },
+    {
+      "id": "cores-fantasia",
+      "script": "Cores",
+      "serif": "fantasia",
+      "subtitulo": "Rosa, lilás, azul e muito mais",
+      "texto": "Cores vivas com preparo do fio e orientação de manutenção, para a cor durar bonita por mais tempo.",
+      "fotos": []
+    }
+  ],
+  "rodape": [
+    {
+      "id": "rod-ad04",
+      "arquivo": "assets/fotos/antes-depois-04",
+      "larguras": [
+        600,
+        1080
+      ],
+      "formatos": [
+        "avif",
+        "webp",
+        "jpg"
+      ],
+      "largura": 1080,
+      "altura": 1080,
+      "antesDepois": true,
+      "legenda": "Morena iluminada",
+      "descricao": "Cabelo castanho com luzes caramelo e ondas"
+    },
+    {
+      "id": "rod-salao",
+      "arquivo": "assets/img/raquel-melo-salao",
+      "larguras": [
+        500,
+        800,
+        1100
+      ],
+      "formatos": [
+        "avif",
+        "webp",
+        "jpg"
+      ],
+      "largura": 800,
+      "altura": 1200,
+      "antesDepois": false,
+      "legenda": "",
+      "descricao": "Raquel Melo sentada em um sofá, vestindo conjunto preto"
+    },
+    {
+      "id": "rod-ad03",
+      "arquivo": "assets/fotos/antes-depois-03",
+      "larguras": [
+        600,
+        1080
+      ],
+      "formatos": [
+        "avif",
+        "webp",
+        "jpg"
+      ],
+      "largura": 1080,
+      "altura": 1080,
+      "antesDepois": true,
+      "legenda": "Loiro claro",
+      "descricao": "Cabelo loiro claro, liso e uniforme"
+    }
+  ]
+}

@@ -32,9 +32,6 @@
   <link rel="preload" href="assets/fonts/cormorant-garamond-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/great-vibes-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" as="image" type="image/avif"
-        imagesrcset="assets/img/raquel-melo-retrato-400.avif 400w, assets/img/raquel-melo-retrato-700.avif 700w, assets/img/raquel-melo-retrato-1000.avif 1000w"
-        imagesizes="(min-width: 1080px) 560px, 92vw" fetchpriority="high">
   <link rel="stylesheet" href="assets/css/style.css">
 
   <script>
@@ -46,6 +43,11 @@
       d.documentElement.classList.add('anim');
       setTimeout(function () { if (!window.__animPronta) d.documentElement.classList.remove('anim'); }, 4000);
     })(document);
+    /* As fotos do site vêm de assets/data/fotos.json (editado pelo painel da Raquel).
+       "no-cache" confere se há versão nova a cada visita, sem baixar de novo se não mudou. */
+    window.__fotos = window.fetch
+      ? fetch('assets/data/fotos.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+      : null;
   </script>
   <script src="assets/js/config.js" defer></script>
   <script src="assets/js/main.js" defer></script>
@@ -130,18 +132,7 @@
         </div>
 
         <div class="hero-foto-area">
-          <figure class="hero-foto" data-hero-foto>
-            <picture>
-              <source type="image/avif" sizes="(min-width: 1080px) 560px, 92vw"
-                      srcset="assets/img/raquel-melo-retrato-400.avif 400w, assets/img/raquel-melo-retrato-700.avif 700w, assets/img/raquel-melo-retrato-1000.avif 1000w">
-              <source type="image/webp" sizes="(min-width: 1080px) 560px, 92vw"
-                      srcset="assets/img/raquel-melo-retrato-400.webp 400w, assets/img/raquel-melo-retrato-700.webp 700w, assets/img/raquel-melo-retrato-1000.webp 1000w">
-              <img src="assets/img/raquel-melo-retrato-700.jpg" sizes="(min-width: 1080px) 560px, 92vw"
-                   srcset="assets/img/raquel-melo-retrato-400.jpg 400w, assets/img/raquel-melo-retrato-700.jpg 700w, assets/img/raquel-melo-retrato-1000.jpg 1000w"
-                   width="700" height="1244" fetchpriority="high"
-                   alt="Raquel Melo sentada em uma poltrona, de camisa branca e blazer bege">
-            </picture>
-          </figure>
+          <figure class="hero-foto" data-hero-foto></figure>
           <a class="nota-google" href="#" data-nota-google hidden target="_blank" rel="noopener">
             <strong data-nota-valor>5,0</strong>
             <span class="nota-estrelas" aria-hidden="true">★★★★★</span>
@@ -164,35 +155,7 @@
     <!-- ============================== Sobre ============================== -->
     <section class="secao sobre" id="sobre" aria-labelledby="sobre-titulo">
       <div class="container sobre-grid">
-        <div class="sobre-fotos">
-          <figure class="foto foto-arco sobre-foto-principal" data-revelar>
-            <picture>
-              <source type="image/avif" sizes="(min-width: 1080px) 360px, 50vw" srcset="assets/img/raquel-melo-colorista-500.avif 500w, assets/img/raquel-melo-colorista-800.avif 800w, assets/img/raquel-melo-colorista-1100.avif 1100w">
-              <source type="image/webp" sizes="(min-width: 1080px) 360px, 50vw" srcset="assets/img/raquel-melo-colorista-500.webp 500w, assets/img/raquel-melo-colorista-800.webp 800w, assets/img/raquel-melo-colorista-1100.webp 1100w">
-              <img src="assets/img/raquel-melo-colorista-800.jpg" sizes="(min-width: 1080px) 360px, 50vw" srcset="assets/img/raquel-melo-colorista-500.jpg 500w, assets/img/raquel-melo-colorista-800.jpg 800w, assets/img/raquel-melo-colorista-1100.jpg 1100w"
-                   width="800" height="1200" loading="lazy" decoding="async"
-                   alt="Raquel Melo sorrindo no salão, segurando um pincel de coloração">
-            </picture>
-          </figure>
-          <figure class="foto sobre-foto-2" data-revelar style="--d: 120ms">
-            <picture>
-              <source type="image/avif" sizes="(min-width: 1080px) 300px, 40vw" srcset="assets/img/raquel-melo-pb-500.avif 500w, assets/img/raquel-melo-pb-800.avif 800w">
-              <source type="image/webp" sizes="(min-width: 1080px) 300px, 40vw" srcset="assets/img/raquel-melo-pb-500.webp 500w, assets/img/raquel-melo-pb-800.webp 800w">
-              <img src="assets/img/raquel-melo-pb-500.jpg" sizes="(min-width: 1080px) 300px, 40vw" srcset="assets/img/raquel-melo-pb-500.jpg 500w, assets/img/raquel-melo-pb-800.jpg 800w"
-                   width="800" height="1422" loading="lazy" decoding="async"
-                   alt="Retrato em preto e branco de Raquel Melo, de blazer">
-            </picture>
-          </figure>
-          <figure class="foto sobre-foto-3" data-revelar style="--d: 220ms">
-            <picture>
-              <source type="image/avif" sizes="(min-width: 1080px) 300px, 40vw" srcset="assets/img/raquel-bastidores-pb-300.avif 300w, assets/img/raquel-bastidores-pb-500.avif 500w, assets/img/raquel-bastidores-pb-800.avif 800w">
-              <source type="image/webp" sizes="(min-width: 1080px) 300px, 40vw" srcset="assets/img/raquel-bastidores-pb-300.webp 300w, assets/img/raquel-bastidores-pb-500.webp 500w, assets/img/raquel-bastidores-pb-800.webp 800w">
-              <img src="assets/img/raquel-bastidores-pb-500.jpg" sizes="(min-width: 1080px) 300px, 40vw" srcset="assets/img/raquel-bastidores-pb-300.jpg 300w, assets/img/raquel-bastidores-pb-500.jpg 500w, assets/img/raquel-bastidores-pb-800.jpg 800w"
-                   width="800" height="889" loading="lazy" decoding="async"
-                   alt="Raquel Melo finalizando os cachos de uma cliente no salão">
-            </picture>
-          </figure>
-        </div>
+        <div class="sobre-fotos" data-sobre-fotos></div>
 
         <div class="sobre-texto" data-revelar>
           <p class="sobretitulo">Prazer, eu sou a Raquel</p>
@@ -206,70 +169,9 @@
       <span class="marca-dagua sobre-marca-dagua" aria-hidden="true" data-deriva>Raquel</span>
     </section>
 
-    <!-- ============================== Resultados ============================== -->
-    <section class="secao galeria galeria-resultados" id="resultados" aria-labelledby="resultados-titulo">
-      <div class="container cabeca-centro" data-revelar>
-        <span class="marca-dagua marca-dagua-serifa" aria-hidden="true" data-deriva>Cachos</span>
-        <h2 class="titulo-misto" id="resultados-titulo"><span class="script">Cachos</span> <span class="serif">que iluminam</span></h2>
-        <p class="subtitulo-caps">Mechas em cabelo cacheado</p>
-      </div>
-
-      <div class="carrossel" data-carrossel role="region" aria-roledescription="carrossel" aria-label="Resultados de mechas em cabelo cacheado">
-        <button class="carrossel-seta carrossel-seta-anterior" type="button" data-anterior aria-label="Foto anterior" aria-controls="trilho-resultados">
-          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-seta-esquerda"></use></svg>
-        </button>
-        <div class="carrossel-trilho" id="trilho-resultados" data-trilho>
-          <figure class="polaroid">
-            <picture>
-              <source type="image/avif" sizes="(min-width: 1080px) 400px, 72vw" srcset="assets/img/resultado-cachos-1-400.avif 400w, assets/img/resultado-cachos-1-700.avif 700w, assets/img/resultado-cachos-1-1000.avif 1000w">
-              <source type="image/webp" sizes="(min-width: 1080px) 400px, 72vw" srcset="assets/img/resultado-cachos-1-400.webp 400w, assets/img/resultado-cachos-1-700.webp 700w, assets/img/resultado-cachos-1-1000.webp 1000w">
-              <img src="assets/img/resultado-cachos-1-700.jpg" sizes="(min-width: 1080px) 400px, 72vw" srcset="assets/img/resultado-cachos-1-400.jpg 400w, assets/img/resultado-cachos-1-700.jpg 700w, assets/img/resultado-cachos-1-1000.jpg 1000w"
-                   width="1000" height="1333" loading="lazy" decoding="async" draggable="false"
-                   alt="Cliente com cachos longos e mechas loiras, depois da finalização">
-            </picture>
-            <figcaption class="etiqueta">Mechas iluminadas</figcaption>
-          </figure>
-          <figure class="polaroid">
-            <picture>
-              <source type="image/avif" sizes="(min-width: 1080px) 400px, 72vw" srcset="assets/img/resultado-cachos-2-400.avif 400w, assets/img/resultado-cachos-2-700.avif 700w, assets/img/resultado-cachos-2-1000.avif 1000w">
-              <source type="image/webp" sizes="(min-width: 1080px) 400px, 72vw" srcset="assets/img/resultado-cachos-2-400.webp 400w, assets/img/resultado-cachos-2-700.webp 700w, assets/img/resultado-cachos-2-1000.webp 1000w">
-              <img src="assets/img/resultado-cachos-2-700.jpg" sizes="(min-width: 1080px) 400px, 72vw" srcset="assets/img/resultado-cachos-2-400.jpg 400w, assets/img/resultado-cachos-2-700.jpg 700w, assets/img/resultado-cachos-2-1000.jpg 1000w"
-                   width="1000" height="1333" loading="lazy" decoding="async" draggable="false"
-                   alt="Close dos cachos com mechas, com brilho do comprimento às pontas">
-            </picture>
-            <figcaption class="etiqueta">Brilho até as pontas</figcaption>
-          </figure>
-          <figure class="polaroid">
-            <picture>
-              <source type="image/avif" sizes="(min-width: 1080px) 400px, 72vw" srcset="assets/img/resultado-cachos-3-400.avif 400w, assets/img/resultado-cachos-3-700.avif 700w, assets/img/resultado-cachos-3-1000.avif 1000w">
-              <source type="image/webp" sizes="(min-width: 1080px) 400px, 72vw" srcset="assets/img/resultado-cachos-3-400.webp 400w, assets/img/resultado-cachos-3-700.webp 700w, assets/img/resultado-cachos-3-1000.webp 1000w">
-              <img src="assets/img/resultado-cachos-3-700.jpg" sizes="(min-width: 1080px) 400px, 72vw" srcset="assets/img/resultado-cachos-3-400.jpg 400w, assets/img/resultado-cachos-3-700.jpg 700w, assets/img/resultado-cachos-3-1000.jpg 1000w"
-                   width="1000" height="1333" loading="lazy" decoding="async" draggable="false"
-                   alt="Raquel Melo ajeitando os cachos iluminados da cliente">
-            </picture>
-            <figcaption class="etiqueta">Ajuste final</figcaption>
-          </figure>
-          <figure class="polaroid">
-            <picture>
-              <source type="image/avif" sizes="(min-width: 1080px) 400px, 72vw" srcset="assets/img/raquel-bastidores-pb-300.avif 300w, assets/img/raquel-bastidores-pb-500.avif 500w, assets/img/raquel-bastidores-pb-800.avif 800w">
-              <source type="image/webp" sizes="(min-width: 1080px) 400px, 72vw" srcset="assets/img/raquel-bastidores-pb-300.webp 300w, assets/img/raquel-bastidores-pb-500.webp 500w, assets/img/raquel-bastidores-pb-800.webp 800w">
-              <img src="assets/img/raquel-bastidores-pb-500.jpg" sizes="(min-width: 1080px) 400px, 72vw" srcset="assets/img/raquel-bastidores-pb-300.jpg 300w, assets/img/raquel-bastidores-pb-500.jpg 500w, assets/img/raquel-bastidores-pb-800.jpg 800w"
-                   width="800" height="889" loading="lazy" decoding="async" draggable="false"
-                   alt="Em preto e branco, Raquel Melo finaliza os cachos de uma cliente">
-            </picture>
-            <figcaption class="etiqueta">Bastidores</figcaption>
-          </figure>
-        </div>
-        <button class="carrossel-seta carrossel-seta-proxima" type="button" data-proximo aria-label="Próxima foto" aria-controls="trilho-resultados">
-          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-seta-direita"></use></svg>
-        </button>
-      </div>
-
-      <div class="container galeria-rodape" data-revelar>
-        <p>A luz entra sem desmanchar a curvatura: os cachos ganham brilho e definição do comprimento às pontas, com acabamento cuidadoso do começo ao fim.</p>
-        <a class="btn btn-escuro btn-anel" href="#horarios" data-wa="Olá, Raquel! Vi os resultados de mechas em cachos no site e gostaria de agendar uma avaliação.">Agendar</a>
-      </div>
-    </section>
+    <!-- ============================== Galerias de resultados ==============================
+         Montadas a partir de assets/data/fotos.json com o modelo #modelo-galeria (fim da página).
+         Galeria sem foto não aparece. -->
 
     <!-- ============================== Vídeos ============================== -->
     <!-- Para incluir um vídeo novo: coloque o .mp4 e a capa em assets/ e copie um <figure class="polaroid polaroid-video">. -->
@@ -384,7 +286,7 @@
           <details class="faq-item">
             <summary>Cabelo cacheado pode fazer mechas?</summary>
             <div class="faq-resposta">
-              <p>Pode. Com a técnica certa e cuidado com a fibra, a luz entra sem desmanchar a curvatura. As fotos e o vídeo desta página mostram um exemplo.</p>
+              <p>Pode. Com a técnica certa e cuidado com a fibra, a luz entra sem desmanchar a curvatura. O vídeo desta página mostra um exemplo.</p>
             </div>
           </details>
           <details class="faq-item">
@@ -429,11 +331,7 @@
         <p class="rodape-descricao">Coloração, mechas e cores fantasia feitas sob medida, com cuidado com a saúde dos fios.</p>
       </div>
 
-      <div class="rodape-polaroids" aria-hidden="true">
-        <img src="assets/img/resultado-cachos-1-400.jpg" alt="" width="400" height="533" loading="lazy" decoding="async">
-        <img src="assets/img/raquel-melo-salao-500.jpg" alt="" width="500" height="750" loading="lazy" decoding="async">
-        <img src="assets/img/resultado-cachos-3-400.jpg" alt="" width="400" height="533" loading="lazy" decoding="async">
-      </div>
+      <div class="rodape-polaroids" data-rodape-fotos aria-hidden="true"></div>
 
       <div class="rodape-onde" data-rodape-onde hidden>
         <p class="rodape-onde-titulo">Onde estamos</p>
@@ -462,6 +360,47 @@
   <a class="flutuante" href="#horarios" data-wa="Olá, Raquel! Vim pelo site e gostaria de agendar um horário." data-flutuante aria-label="Agendar pelo WhatsApp">
     <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-whatsapp"></use></svg>
   </a>
+
+  <!-- Modelo de cada galeria de resultados (preenchido pelo main.js) -->
+  <template id="modelo-galeria">
+    <section class="secao galeria">
+      <div class="container cabeca-centro" data-revelar>
+        <span class="marca-dagua marca-dagua-serifa" aria-hidden="true" data-deriva></span>
+        <h2 class="titulo-misto"><span class="script"></span> <span class="serif"></span></h2>
+        <p class="subtitulo-caps"></p>
+      </div>
+      <div class="carrossel" data-carrossel role="region" aria-roledescription="carrossel">
+        <button class="carrossel-seta carrossel-seta-anterior" type="button" data-anterior aria-label="Foto anterior">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-seta-esquerda"></use></svg>
+        </button>
+        <div class="carrossel-trilho" data-trilho></div>
+        <button class="carrossel-seta carrossel-seta-proxima" type="button" data-proximo aria-label="Próxima foto">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-seta-direita"></use></svg>
+        </button>
+      </div>
+      <div class="container galeria-rodape" data-revelar>
+        <p class="galeria-texto"></p>
+        <a class="btn btn-escuro btn-anel" href="#horarios" data-wa="">Agendar</a>
+      </div>
+    </section>
+  </template>
+
+  <!-- Foto ampliada (abre ao tocar numa foto das galerias) -->
+  <dialog class="ampliar" data-ampliar aria-label="Foto ampliada">
+    <figure class="ampliar-figura">
+      <img data-ampliar-img alt="">
+      <figcaption class="ampliar-legenda" data-ampliar-legenda></figcaption>
+    </figure>
+    <button class="ampliar-botao ampliar-fechar" type="button" data-ampliar-fechar aria-label="Fechar">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+    <button class="ampliar-botao ampliar-anterior" type="button" data-ampliar-anterior aria-label="Foto anterior">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-seta-esquerda"></use></svg>
+    </button>
+    <button class="ampliar-botao ampliar-proxima" type="button" data-ampliar-proxima aria-label="Próxima foto">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-seta-direita"></use></svg>
+    </button>
+  </dialog>
 
   <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
     <symbol id="icon-whatsapp" viewBox="0 0 24 24">

@@ -9,12 +9,38 @@ Site institucional de uma página, estático (HTML, CSS e JavaScript puros), pub
 1. **Topo:** nome, título "Colorista de todas as cores", botão de agendar, foto em arco com selo girando e nota do Google.
 2. **Fitas cruzadas** com os serviços, rolando.
 3. **Sobre a Raquel:** colagem de fotos, texto e assinatura.
-4. **Cachos que iluminam:** galeria de resultados em polaroids (arrastar no celular, setas no computador).
+4. **Galerias de resultados** ("Morena iluminada", "Transformações de cor e brilho" e as que a Raquel criar): fotos de antes e depois em polaroids, arrastar no celular, setas no computador, tocar para ampliar.
 5. **Vídeos do salão:** vídeos em pé, que tocam sem som quando aparecem na tela.
 6. **Horários e como chegar:** tabela com o dia de hoje em destaque, aviso de horário agendado, endereço, mapa e botões (WhatsApp, avaliar no Google, Instagram, Google Maps, Waze, Uber, YouTube, TikTok).
 7. **Perguntas frequentes.**
 8. **Rodapé:** onde estamos, botões, menu e marca-d'água com o nome.
 9. **Botão flutuante do WhatsApp**, que aparece depois do botão do topo.
+
+## Painel de fotos da Raquel
+
+Endereço: https://ayvotec2026.github.io/raquelmelo/admin/ (não aparece no site nem no Google).
+
+Com a senha, a Raquel:
+
+- adiciona fotos (até 15 por galeria; 1 no topo; 3 no "Sobre"; 3 no rodapé);
+- troca uma foto por outra, muda a ordem, leva a foto para outro lugar do site ou remove;
+- escreve a legenda e marca se a foto é uma montagem de antes e depois (aparecem as etiquetas "Antes" e "Depois");
+- cria até 4 galerias, muda os textos de cada uma, sobe, desce ou exclui;
+- toca em **Publicar no site**: tudo vai num único envio e o site se atualiza em 1 a 5 minutos.
+
+O site se ajusta sozinho: espaço sem foto não aparece (galeria vazia some, o topo fica só com o texto, o "Sobre" e o rodapé se reorganizam), então nunca fica um card em branco.
+
+As fotos são reduzidas no próprio celular (600 e 1200 px, JPEG), o que deixa o site leve e apaga dados escondidos da foto, como a localização. Fotos do iPhone funcionam normalmente: ao escolher a foto pelo celular, o iPhone já entrega em JPEG.
+
+### Configurar o acesso (uma vez, pelo Italo)
+
+O site é estático, então o painel publica pelo próprio GitHub, com um token só deste repositório:
+
+1. No GitHub da conta AYVOTEC2026: *Settings › Developer settings › Fine-grained tokens › Generate new token*.
+2. Validade de 1 ano; *Repository access › Only select repositories › raquelmelo*; em *Repository permissions*, **Contents: Read and write** (nada mais).
+3. Abra o painel, toque em "Configurar o acesso", cole o token e gere a senha da Raquel. Envie para ela o endereço do painel e a senha.
+
+O token fica salvo em `admin/acesso.json` cifrado com a senha (AES-GCM com chave derivada por PBKDF2, 600 mil iterações); sem a senha ele não serve. Quando o token vencer, o painel avisa: gere outro e repita o passo 3. A Raquel pode trocar a senha pelo próprio painel.
 
 ## Editar os dados do salão
 
@@ -57,9 +83,9 @@ Com um vídeo, ele fica centralizado. No computador, até três vídeos ficam la
 
 Músicas de reels do Instagram costumam ser licenciadas só para o Instagram, por isso os vídeos entram sem som. Se a Raquel tiver um vídeo com áudio próprio (narração, por exemplo), dá para manter o som com um botão de ativar.
 
-## Incluir fotos de resultados
+## Onde ficam as fotos
 
-Cada foto existe em três larguras e três formatos (`-400.avif`, `-400.webp`, `-400.jpg` etc.). Para incluir mais resultados no carrossel, gere os mesmos tamanhos e copie um `<figure class="polaroid">` na seção "Cachos que iluminam", trocando a foto, o texto alternativo e a etiqueta. Uma galeria nova (por exemplo, "Cores fantasia") é uma cópia da seção inteira, com outro título.
+Todas as fotos do site estão listadas em [`assets/data/fotos.json`](assets/data/fotos.json), que o painel edita: topo, "Sobre", galerias (com título, subtítulo e texto) e rodapé. O `main.js` lê esse arquivo e monta as seções. As fotos enviadas pelo painel ficam em `assets/fotos/`; as fotos originais da Raquel, em `midia/` (fora do repositório).
 
 ## Pronto para celular
 
@@ -79,7 +105,10 @@ manifest.webmanifest          instalação na tela inicial
 assets/css/style.css          visual (cores e fontes no topo do arquivo)
 assets/fonts/                 Cormorant Garamond, Great Vibes e Montserrat, no próprio site
 assets/js/config.js           dados do salão
-assets/js/main.js             contatos, menu, carrosséis, vídeos, perguntas e animações
+assets/js/main.js             contatos, fotos e galerias, menu, carrosséis, vídeos, perguntas e animações
+assets/data/fotos.json        lista das fotos do site (editada pelo painel)
+assets/fotos/                 fotos de resultados (antes e depois) e fotos enviadas pelo painel
+admin/                        painel de fotos da Raquel (index.html, admin.js, admin.css e acesso.json)
 assets/img/                   fotos (AVIF, WebP e JPEG em vários tamanhos) e logos em SVG
 assets/video/                 vídeos (H.264, sem áudio)
 og-image.jpg                  imagem que aparece ao compartilhar o link

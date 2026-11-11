@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self' https://api.github.com; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Painel de fotos | Raquel Melo</title>
+  <meta name="theme-color" content="#241A10">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="admin.css">
+  <script src="admin.js" defer></script>
+</head>
+<body>
+  <header class="barra">
+    <div class="barra-inner">
+      <div class="barra-marca">
+        <img src="../assets/img/logo-monogram-light.svg" alt="" width="114" height="101">
+        <span><strong>Raquel Melo</strong><small>Painel de fotos</small></span>
+      </div>
+      <nav class="barra-acoes" data-acoes hidden aria-label="Painel">
+        <a class="barra-link" href="../" target="_blank" rel="noopener">Ver o site</a>
+        <button class="barra-link" type="button" data-abrir-senha>Trocar senha</button>
+        <button class="barra-link" type="button" data-sair>Sair</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="conteudo">
+    <!-- ============ Entrar ============ -->
+    <section class="tela" data-tela="entrar" hidden>
+      <form class="cartao formulario" data-form-entrar novalidate>
+        <h1>Entrar no painel</h1>
+        <p>Aqui você troca as fotos do site. Digite a sua senha.</p>
+        <input type="text" name="usuario" value="raquel" autocomplete="username" hidden>
+        <label class="campo">
+          <span>Senha</span>
+          <input type="password" name="senha" autocomplete="current-password" required>
+        </label>
+        <p class="erro" data-erro role="alert" hidden></p>
+        <button class="botao botao-escuro" type="submit" data-enviar>Entrar</button>
+      </form>
+      <p class="nota-baixo"><button class="link" type="button" data-ir="configurar">Configurar o acesso (só o Italo)</button></p>
+    </section>
+
+    <!-- ============ Configurar o acesso (feito uma vez) ============ -->
+    <section class="tela" data-tela="configurar" hidden>
+      <form class="cartao formulario" data-form-configurar novalidate>
+        <h1>Configurar o acesso</h1>
+        <p>Feito uma vez. O painel guarda um token do GitHub protegido pela senha da Raquel: sem a senha, ninguém consegue usar o token.</p>
+        <ol class="passos">
+          <li>No GitHub da conta <strong>AYVOTEC2026</strong>, abra <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Fine-grained tokens › Generate new token</a>.</li>
+          <li>Nome: <em>Painel de fotos Raquel</em>. Validade: 1 ano.</li>
+          <li>Em <em>Repository access</em>, escolha <em>Only select repositories</em> e marque <strong>raquelmelo</strong>.</li>
+          <li>Em <em>Permissions › Repository permissions</em>, deixe <strong>Contents</strong> como <em>Read and write</em>. Nada mais.</li>
+          <li>Gere o token, copie e cole abaixo.</li>
+        </ol>
+        <label class="campo">
+          <span>Token do GitHub</span>
+          <input type="password" name="token" autocomplete="off" spellcheck="false" autocapitalize="off" required>
+        </label>
+        <label class="campo">
+          <span>Senha para a Raquel (mínimo de 12 caracteres)</span>
+          <input type="text" name="senha" autocomplete="new-password" spellcheck="false" autocapitalize="off" minlength="12" required>
+        </label>
+        <button class="botao botao-claro" type="button" data-gerar-senha>Gerar uma senha forte</button>
+        <p class="erro" data-erro role="alert" hidden></p>
+        <button class="botao botao-escuro" type="submit" data-enviar>Salvar o acesso</button>
+        <button class="link" type="button" data-ir="entrar">Voltar</button>
+      </form>
+    </section>
+
+    <!-- ============ Painel ============ -->
+    <section class="tela" data-tela="painel" hidden>
+      <div class="intro">
+        <h1>Fotos do site</h1>
+        <p>Toque numa foto para trocar, mudar de lugar ou remover. Quando terminar, toque em <strong>Publicar no site</strong>. Espaço sem foto some do site sozinho.</p>
+      </div>
+      <div class="espacos" data-espacos></div>
+      <button class="botao botao-claro nova-galeria" type="button" data-nova-galeria>+ Criar nova galeria</button>
+    </section>
+  </main>
+
+  <div class="publicar" data-barra-publicar hidden>
+    <p class="publicar-resumo" data-resumo>Tudo publicado</p>
+    <div class="publicar-botoes">
+      <button class="botao botao-claro" type="button" data-desfazer disabled>Desfazer</button>
+      <button class="botao botao-ouro" type="button" data-publicar disabled>Publicar no site</button>
+    </div>
+  </div>
+
+  <!-- ============ Janela de uma foto ============ -->
+  <dialog class="janela" data-janela-foto aria-labelledby="jf-titulo">
+    <form class="janela-corpo" data-jf-form>
+      <h2 id="jf-titulo" data-jf-titulo>Foto</h2>
+      <img class="janela-previa" data-jf-previa alt="">
+      <label class="campo" data-jf-legenda-campo>
+        <span>Legenda (aparece sobre a foto)</span>
+        <input type="text" maxlength="40" data-jf-legenda placeholder="Ex.: Morena iluminada">
+      </label>
+      <label class="opcao" data-jf-ad-campo>
+        <input type="checkbox" data-jf-ad>
+        <span>É uma montagem de antes e depois (lado a lado)</span>
+      </label>
+      <div class="linha-botoes">
+        <button class="botao botao-claro" type="button" data-jf-esquerda>‹ Mais para o início</button>
+        <button class="botao botao-claro" type="button" data-jf-direita>Mais para o fim ›</button>
+      </div>
+      <label class="campo">
+        <span>Levar para outro lugar do site</span>
+        <select data-jf-mover></select>
+      </label>
+      <label class="botao botao-claro botao-arquivo">
+        Trocar por outra foto
+        <input type="file" accept="image/*" data-jf-trocar>
+      </label>
+      <button class="botao botao-perigo" type="button" data-jf-remover>Remover foto</button>
+      <button class="botao botao-escuro" type="button" data-jf-pronto>Pronto</button>
+    </form>
+  </dialog>
+
+  <!-- ============ Andamento (preparar fotos e publicar) ============ -->
+  <dialog class="janela" data-janela-progresso aria-labelledby="jp-titulo">
+    <div class="janela-corpo">
+      <h2 id="jp-titulo" data-jp-titulo>Publicando</h2>
+      <p data-jp-texto></p>
+      <progress data-jp-barra max="100" value="0"></progress>
+      <p class="erro" data-jp-erro role="alert" hidden></p>
+      <div class="linha-botoes" data-jp-fim hidden>
+        <a class="botao botao-escuro" href="../" target="_blank" rel="noopener" data-jp-site>Ver o site</a>
+        <button class="botao botao-claro" type="button" data-jp-fechar>Fechar</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ============ Trocar a senha ============ -->
+  <dialog class="janela" data-janela-senha aria-labelledby="js-titulo">
+    <form class="janela-corpo" data-form-senha novalidate>
+      <h2 id="js-titulo">Trocar a senha</h2>
+      <label class="campo">
+        <span>Nova senha (mínimo de 12 caracteres)</span>
+        <input type="text" name="senha" autocomplete="new-password" spellcheck="false" autocapitalize="off" minlength="12" required>
+      </label>
+      <button class="botao botao-claro" type="button" data-gerar-senha>Gerar uma senha forte</button>
+      <p class="erro" data-erro role="alert" hidden></p>
+      <button class="botao botao-escuro" type="submit" data-enviar>Salvar a nova senha</button>
+      <button class="botao botao-claro" type="button" data-fechar-senha>Cancelar</button>
+    </form>
+  </dialog>
+</body>
+</html>
