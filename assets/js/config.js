@@ -17,11 +17,11 @@ window.SITE_CONFIG = {
   instagram: "",
 
   // Cidade, para aparecer no topo do site. Ex.: "Vitória · ES"
-  cidade: "",
+  cidade: "Fortaleza · CE",
 
   // Endereço completo, do jeito que deve aparecer no site
   // Ex.: "Rua das Flores, 123, sala 4, Centro, Vitória, ES"
-  endereco: "",
+  endereco: "R. Cel. Jaime Rolemberg, 75 - Maraponga, Fortaleza - CE, 60712-175",
 
   // Link do Google Maps (opcional). Se ficar vazio, o link é criado a partir
   // do endereço acima.
@@ -30,7 +30,14 @@ window.SITE_CONFIG = {
   // Horários de atendimento, um item por linha, no formato "Dia: horário".
   // O dia de hoje fica destacado no site.
   // Ex.: ["Terça a sexta: 9h às 18h", "Sábado: 8h às 16h", "Domingo e segunda: fechado"]
-  horarios: [],
+  horarios: [
+    "Terça-feira: 09:00 – 18:00",
+    "Quarta-feira: 09:00 – 18:00",
+    "Quinta-feira: 09:00 – 18:00",
+    "Sexta-feira: 08:00 – 18:00",
+    "Sábado: 08:00 – 18:00",
+    "Domingo e segunda: fechado",
+  ],
 
   // Formas de pagamento, uma por item. Ex.: ["Pix", "Cartão de crédito e débito"]
   pagamento: [],

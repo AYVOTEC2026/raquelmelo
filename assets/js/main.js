@@ -289,7 +289,26 @@
     logo: abs('apple-touch-icon.png'),
   };
   if (waDigits) ld.telephone = '+' + waDigits;
-  if (address) ld.address = { '@type': 'PostalAddress', streetAddress: address, addressCountry: 'BR' };
+  if (address) {
+    ld.address = { '@type': 'PostalAddress', streetAddress: address, addressCountry: 'BR' };
+    const [localidade, estado] = cidade.split(/\s*[·,-]\s*/);
+    if (localidade) ld.address.addressLocality = localidade;
+    if (estado) ld.address.addressRegion = estado;
+    const cep = address.match(/\b\d{5}-?\d{3}\b/);
+    if (cep) ld.address.postalCode = cep[0];
+  }
+  // Horários no formato do Google ("Terça-feira: 09:00 – 18:00")
+  const NOMES_DIAS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const hora = (h, m) => String(h).padStart(2, '0') + ':' + String(m || 0).padStart(2, '0');
+  const horarioLd = hours.map((linha) => {
+    const i = linha.indexOf(':');
+    if (i <= 0) return null;
+    const faixa = linha.slice(i + 1).match(/(\d{1,2})\s*[:h]?\s*(\d{2})?\s*(?:–|-|às|a)\s*(\d{1,2})\s*[:h]?\s*(\d{2})?/i);
+    const dias = diasDoTexto(linha.slice(0, i));
+    if (!faixa || !dias.length) return null;
+    return { '@type': 'OpeningHoursSpecification', dayOfWeek: dias.map((d) => NOMES_DIAS[d]), opens: hora(faixa[1], faixa[2]), closes: hora(faixa[3], faixa[4]) };
+  }).filter(Boolean);
+  if (horarioLd.length) ld.openingHoursSpecification = horarioLd;
   const perfis = [igUrl, youtubeUrl, tiktokUrl].filter(Boolean);
   if (perfis.length) ld.sameAs = perfis;
   if (pagamento.length) ld.paymentAccepted = listaPt(pagamento);
