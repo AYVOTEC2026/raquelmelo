@@ -243,13 +243,23 @@
   const onde = $('[data-rodape-onde]');
   if (onde && (address || waDigits)) {
     if (address) {
+      // quebra a linha antes da cidade: rua e bairro em cima, cidade e CEP embaixo
       const p = $('[data-rodape-endereco]', onde);
-      p.textContent = address;
+      const nomeCidade = cidade.split(/\s*[·,]\s*/)[0];
+      const corte = nomeCidade ? address.indexOf(nomeCidade) : -1;
+      const linhas = el('span', { class: 'rodape-onde-texto' });
+      if (corte > 0) linhas.append(el('span', {}, address.slice(0, corte).replace(/[\s,-]+$/, '')), el('span', {}, address.slice(corte)));
+      else linhas.append(el('span', {}, address));
+      p.append(icone('icon-pin'), linhas);
       p.hidden = false;
     }
     if (waDigits) {
       const t = $('[data-rodape-telefone]', onde);
-      t.textContent = telefone(waDigits);
+      t.href = waUrl();
+      t.target = '_blank';
+      t.rel = 'noopener';
+      t.setAttribute('aria-label', 'WhatsApp ' + telefone(waDigits));
+      t.append(icone('icon-whatsapp'), el('span', {}, telefone(waDigits)));
       t.hidden = false;
     }
     onde.hidden = false;

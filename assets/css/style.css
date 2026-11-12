@@ -1131,8 +1131,26 @@ p { margin: 0; text-wrap: pretty; }
   background-clip: text;
   color: transparent;
 }
-.rodape-onde p[data-rodape-endereco] { margin-top: 8px; line-height: 1.7; color: var(--ink-2); }
-.rodape-telefone { margin-top: 10px; font-family: var(--font-titulo); font-size: 1.875rem; font-weight: 500; line-height: 1.2; color: var(--espresso); }
+.rodape-onde-linha,
+.rodape-telefone { display: flex; gap: 10px; }
+.rodape-onde-linha { align-items: flex-start; margin-top: 12px; font-size: .9375rem; line-height: 1.6; color: var(--ink-2); }
+.rodape-onde-texto { display: grid; }
+.rodape-onde-linha .icon { flex: 0 0 auto; width: 18px; height: 18px; margin-top: 3px; color: var(--bronze); }
+/* telefone na fonte dos textos, com números alinhados (a serifa usa números que sobem e descem) */
+.rodape-telefone {
+  align-items: center;
+  min-height: 44px;
+  margin-top: 12px;
+  font-family: var(--font-texto);
+  font-size: 1.25rem;
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: .02em;
+  color: var(--espresso);
+  text-decoration: none;
+}
+.rodape-telefone .icon { flex: 0 0 auto; width: 20px; height: 20px; color: var(--bronze); }
+.rodape-telefone:hover span { text-decoration: underline; text-decoration-color: var(--ouro-escuro); text-underline-offset: 4px; }
 
 .rodape-base {
   position: relative;
