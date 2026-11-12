@@ -73,6 +73,8 @@ git commit -m "Atualiza contatos"
 git push
 ```
 
+O GitHub Pages guarda os arquivos no navegador por até 10 minutos. Ao mudar `style.css`, `main.js` ou `config.js`, troque o número `?v=` nas linhas que carregam esses arquivos no `index.html` (e no `404.html` e no `admin/index.html`, se for o caso): assim ninguém vê a página nova com o visual antigo. As fotos do painel não precisam disso.
+
 ## Incluir vídeos
 
 Os vídeos originais do celular são grandes demais para o site. Cada vídeo novo é convertido para MP4 (H.264, 720 × 1280, cerca de 2 Mbps) e ganha uma capa em JPEG do mesmo tamanho. Depois:

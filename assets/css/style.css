@@ -1142,15 +1142,17 @@ p { margin: 0; text-wrap: pretty; }
   min-height: 44px;
   margin-top: 12px;
   font-family: var(--font-texto);
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 600;
   font-variant-numeric: lining-nums tabular-nums;
   letter-spacing: .02em;
   color: var(--espresso);
   text-decoration: none;
+  transition: color .2s;
 }
+/* sem sublinhado (atrapalha a leitura): ao passar o mouse, só a cor muda */
+.rodape-telefone:hover { color: var(--bronze-escuro); }
 .rodape-telefone .icon { flex: 0 0 auto; width: 20px; height: 20px; color: var(--bronze); }
-.rodape-telefone:hover span { text-decoration: underline; text-decoration-color: var(--ouro-escuro); text-underline-offset: 4px; }
 
 .rodape-base {
   position: relative;
