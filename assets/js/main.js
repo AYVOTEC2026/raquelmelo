@@ -597,7 +597,7 @@
      Sem foto, sem card: espaço vazio some e o resto da página se ajusta. */
 
   const TIPOS = { avif: 'image/avif', webp: 'image/webp', jpg: 'image/jpeg' };
-  const LIMITES = { topo: 1, sobre: 3, galeria: 15, rodape: 3 };
+  const LIMITES = { topo: 1, sobre: 3, galeria: 15, produtos: 1, rodape: 3 };
   const fotoValida = (f) => !!f && typeof f.arquivo === 'string' &&
     /^assets\/(img|fotos)\/[a-z0-9][a-z0-9-]*$/.test(f.arquivo) &&
     Array.isArray(f.larguras) && f.larguras.length > 0 &&
@@ -733,7 +733,8 @@
 
     // Galerias: só entram as que têm foto
     const modelo = $('#modelo-galeria');
-    const videosSec = $('#videos');
+    // as galerias entram antes do bloco dos produtos (ou dos vídeos)
+    const depoisDasGalerias = $('#produtos') || $('#videos');
     const galerias = (Array.isArray(d.galerias) ? d.galerias : [])
       .map((g) => ({ g, fotos: fotosDe(g && g.fotos, LIMITES.galeria) }))
       .filter((x) => x.fotos.length);
@@ -744,8 +745,9 @@
       while (usados.has(id) || (i > 0 && document.getElementById(id))) id += '-' + i;
       usados.add(id);
       sec.id = id;
-      // cores alternadas, contando de trás para frente: a última galeria sempre contrasta com os vídeos
-      sec.classList.add((galerias.length - 1 - i) % 2 === 0 ? 'galeria-champanhe' : 'galeria-clara');
+      // cores alternadas, contando de trás para frente: a última galeria é clara e contrasta com
+      // os produtos (champanhe), que contrastam com os vídeos (claros)
+      sec.classList.add((galerias.length - 1 - i) % 2 === 0 ? 'galeria-clara' : 'galeria-champanhe');
 
       const nome = [texto(g.script), texto(g.serif)].filter(Boolean).join(' ') || 'Resultados';
       const titulo = $('.titulo-misto', sec);
@@ -771,7 +773,7 @@
       fotos.forEach((f, k) => trilho.append(cartaoGaleria(f, grupo, k)));
 
       $('[data-wa]', sec).dataset.wa = `Olá, Raquel! Vi as fotos de ${nome.toLowerCase()} no site e gostaria de agendar uma avaliação.`;
-      videosSec.before(sec);
+      depoisDasGalerias.before(sec);
       aplicarWhats(sec);
       iniciarCarrossel(car);
       observarRevelar(sec);
@@ -782,6 +784,12 @@
     });
     // sem galeria, o link "Resultados" sai dos menus
     if (!galerias.length) $$('a[href="#resultados"]').forEach((a) => { (a.closest('li') || a).hidden = true; });
+
+    // Foto dos produtos (STIJL); sem foto, o texto fica sozinho
+    const figProdutos = $('[data-produtos-foto]');
+    const fotoProdutos = fotosDe(d.produtos, LIMITES.produtos)[0];
+    if (figProdutos && fotoProdutos) figProdutos.append(montarFoto(fotoProdutos, { sizes: '(min-width: 1080px) 460px, 90vw' }));
+    else if (figProdutos) $('#produtos').classList.add('sem-foto');
 
     // Polaroids do rodapé (montagem de antes e depois mostra só o "depois")
     const caixaRodape = $('[data-rodape-fotos]');

@@ -144,42 +144,6 @@
           "descricao": "Antes e depois: cabelo escuro com pontas desbotadas fica castanho com reflexos caramelo e ondas"
         },
         {
-          "id": "ad10",
-          "arquivo": "assets/fotos/antes-depois-10",
-          "larguras": [
-            600,
-            1080
-          ],
-          "formatos": [
-            "avif",
-            "webp",
-            "jpg"
-          ],
-          "largura": 1080,
-          "altura": 1080,
-          "antesDepois": true,
-          "legenda": "Degradê caramelo",
-          "descricao": "Antes e depois: cabelo castanho armado fica liso, com degradê caramelo nas pontas"
-        },
-        {
-          "id": "ad08",
-          "arquivo": "assets/fotos/antes-depois-08",
-          "larguras": [
-            600,
-            1080
-          ],
-          "formatos": [
-            "avif",
-            "webp",
-            "jpg"
-          ],
-          "largura": 1080,
-          "altura": 1080,
-          "antesDepois": true,
-          "legenda": "Castanho iluminado",
-          "descricao": "Antes e depois: cabelo acobreado desbotado fica castanho com luzes suaves"
-        },
-        {
           "id": "ad05",
           "arquivo": "assets/fotos/antes-depois-05",
           "larguras": [
@@ -203,8 +167,8 @@
       "id": "transformacoes",
       "script": "Transformações",
       "serif": "de cor e brilho",
-      "subtitulo": "Loiros, ruivos e muito brilho",
-      "texto": "Do loiro claro ao ruivo acobreado: cada transformação é planejada para o seu fio, com cuidado com a saúde do cabelo do começo ao fim.",
+      "subtitulo": "Alisamento, tratamento e cor",
+      "texto": "Do loiro claro ao alisamento saudável: cada transformação é planejada para o seu fio, com cuidado com a saúde do cabelo do começo ao fim.",
       "fotos": [
         {
           "id": "ad03",
@@ -239,8 +203,26 @@
           "largura": 1080,
           "altura": 1080,
           "antesDepois": true,
-          "legenda": "Mechas douradas",
-          "descricao": "Antes e depois: cabelo cacheado grisalho fica liso, com mechas douradas"
+          "legenda": "Alisamento saudável",
+          "descricao": "Antes e depois do alisamento saudável: cabelo cacheado grisalho fica liso, com mechas douradas"
+        },
+        {
+          "id": "ad08",
+          "arquivo": "assets/fotos/antes-depois-08",
+          "larguras": [
+            600,
+            1080
+          ],
+          "formatos": [
+            "avif",
+            "webp",
+            "jpg"
+          ],
+          "largura": 1080,
+          "altura": 1080,
+          "antesDepois": true,
+          "legenda": "Tratamento Sebastian Dark Oil",
+          "descricao": "Antes e depois do tratamento Sebastian Dark Oil: cabelo castanho com brilho e luzes suaves"
         },
         {
           "id": "ad06",
@@ -257,8 +239,26 @@
           "largura": 1080,
           "altura": 1080,
           "antesDepois": true,
-          "legenda": "Ruivo acobreado",
-          "descricao": "Antes e depois: cabelo ruivo com cor irregular fica acobreado, liso e com brilho"
+          "legenda": "Alisamento em ruivo de tinta",
+          "descricao": "Antes e depois do alisamento em cabelo ruivo de tinta: fios lisos, acobreados e com brilho"
+        },
+        {
+          "id": "ad10",
+          "arquivo": "assets/fotos/antes-depois-10",
+          "larguras": [
+            600,
+            1080
+          ],
+          "formatos": [
+            "avif",
+            "webp",
+            "jpg"
+          ],
+          "largura": 1080,
+          "altura": 1080,
+          "antesDepois": true,
+          "legenda": "Alisamento saudável",
+          "descricao": "Antes e depois do alisamento saudável: cabelo castanho armado fica liso, com as pontas em caramelo"
         },
         {
           "id": "ad09",
@@ -275,8 +275,8 @@
           "largura": 1080,
           "altura": 1080,
           "antesDepois": true,
-          "legenda": "Liso com brilho",
-          "descricao": "Antes e depois: cabelo preto armado fica liso e brilhante"
+          "legenda": "Liso e saudável",
+          "descricao": "Antes e depois: cabelo preto armado fica liso, saudável e brilhante"
         }
       ]
     },
@@ -287,6 +287,26 @@
       "subtitulo": "Rosa, lilás, azul e muito mais",
       "texto": "Cores vivas com preparo do fio e orientação de manutenção, para a cor durar bonita por mais tempo.",
       "fotos": []
+    }
+  ],
+  "produtos": [
+    {
+      "id": "stijl",
+      "arquivo": "assets/fotos/produtos-stijl-hydra-glow",
+      "larguras": [
+        600,
+        1200
+      ],
+      "formatos": [
+        "avif",
+        "webp",
+        "jpg"
+      ],
+      "largura": 3024,
+      "altura": 4032,
+      "antesDepois": false,
+      "legenda": "",
+      "descricao": "Produtos da linha Hydra Glow da STIJL no salão: shampoo, máscara restauradora, leave-in, sérum Zero Frizz e máscara bioliquida S.O.S Capilar"
     }
   ],
   "rodape": [

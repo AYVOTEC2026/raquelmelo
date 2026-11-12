@@ -18,7 +18,7 @@
   const CAMINHO_FOTOS = 'assets/data/fotos.json';
   const CAMINHO_ACESSO = 'admin/acesso.json';
   const ITERACOES = 600000;
-  const LIMITES = { topo: 1, sobre: 3, galeria: 15, rodape: 3, galerias: 4 };
+  const LIMITES = { topo: 1, sobre: 3, galeria: 15, produtos: 1, rodape: 3, galerias: 4 };
   const LARGURAS = [600, 1200];
   const SITE = new URL('../', window.location.href);
   const CHAVE_SESSAO = 'rm-painel';
@@ -161,6 +161,7 @@
     const lista = (v) => (Array.isArray(v) ? v.filter((f) => f && typeof f.arquivo === 'string' && Array.isArray(f.larguras)) : []);
     d.topo = lista(d.topo);
     d.sobre = lista(d.sobre);
+    d.produtos = lista(d.produtos);
     d.rodape = lista(d.rodape);
     d.galerias = (Array.isArray(d.galerias) ? d.galerias : []).filter((g) => g && typeof g === 'object').map((g) => {
       g.id = String(g.id || 'galeria-' + Math.random().toString(36).slice(2, 7));
@@ -177,7 +178,7 @@
     original = JSON.stringify(dados);
   };
   const mudou = () => !!dados && JSON.stringify(dados) !== original;
-  const todasFotos = (d) => [...d.topo, ...d.sobre, ...d.galerias.flatMap((g) => g.fotos), ...d.rodape];
+  const todasFotos = (d) => [...d.topo, ...d.sobre, ...d.galerias.flatMap((g) => g.fotos), ...d.produtos, ...d.rodape];
   const arquivosDe = (f) => f.larguras.flatMap((w) => ((Array.isArray(f.formatos) && f.formatos.length) ? f.formatos : ['jpg']).map((x) => `${f.arquivo}-${w}.${x}`));
   const nomeGaleria = (g) => [g.script, g.serif].map((t) => String(t || '').trim()).filter(Boolean).join(' ') || 'Galeria sem nome';
   const slug = (t) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 30) || 'foto';
@@ -192,6 +193,8 @@
       legenda: true, antesDepois: true, galeria: g, indice: i,
       desc: 'Fotos de resultados, em carrossel. Pode ser uma montagem de antes e depois (lado a lado). A foto aparece quadrada.',
     })),
+    { chave: 'produtos', titulo: 'Foto dos produtos (STIJL)', limite: LIMITES.produtos, lista: dados.produtos, prefixo: 'produtos', legenda: false, antesDepois: false,
+      desc: 'Fica ao lado do texto sobre a linha STIJL. Use uma foto na vertical. Sem foto, fica só o texto.' },
     { chave: 'rodape', titulo: 'Fotos do rodapé', limite: LIMITES.rodape, lista: dados.rodape, prefixo: 'rodape', legenda: false, antesDepois: true,
       desc: 'Polaroids no fim da página. Em montagens de antes e depois, aparece só o "depois".' },
   ];

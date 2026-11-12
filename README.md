@@ -10,11 +10,12 @@ Site institucional de uma página, estático (HTML, CSS e JavaScript puros), pub
 2. **Fitas cruzadas** com os serviços, rolando.
 3. **Sobre a Raquel:** colagem de fotos, texto e assinatura.
 4. **Galerias de resultados** ("Morena iluminada", "Transformações de cor e brilho" e as que a Raquel criar): fotos de antes e depois em polaroids, arrastar no celular, setas no computador, tocar para ampliar.
-5. **Vídeos do salão:** vídeos em pé, que tocam sem som quando aparecem na tela.
-6. **Horários e como chegar:** tabela com o dia de hoje em destaque, aviso de horário agendado, endereço, mapa e botões (WhatsApp, avaliar no Google, Instagram, Google Maps, Waze, Uber, YouTube, TikTok).
-7. **Perguntas frequentes.**
-8. **Rodapé:** onde estamos, botões, menu e marca-d'água com o nome.
-9. **Botão flutuante do WhatsApp**, que aparece depois do botão do topo.
+5. **Produtos (STIJL):** "Nutrição com algas marinhas", a linha Hydra Glow usada no salão, com foto.
+6. **Vídeos do salão:** vídeos em pé, que tocam sem som quando aparecem na tela.
+7. **Horários e como chegar:** tabela com o dia de hoje em destaque, aviso de horário agendado, endereço, mapa e botões (WhatsApp, avaliar no Google, Instagram, Google Maps, Waze, Uber, YouTube, TikTok).
+8. **Perguntas frequentes.**
+9. **Rodapé:** onde estamos, botões, menu e marca-d'água com o nome.
+10. **Botão flutuante do WhatsApp**, que aparece depois do botão do topo.
 
 ## Painel de fotos da Raquel
 
@@ -22,7 +23,7 @@ Endereço: https://ayvotec2026.github.io/raquelmelo/admin/ (não aparece no site
 
 Com a senha, a Raquel:
 
-- adiciona fotos (até 15 por galeria; 1 no topo; 3 no "Sobre"; 3 no rodapé);
+- adiciona fotos (até 15 por galeria; 1 no topo; 3 no "Sobre"; 1 na foto dos produtos; 3 no rodapé);
 - troca uma foto por outra, muda a ordem, leva a foto para outro lugar do site ou remove;
 - escreve a legenda e marca se a foto é uma montagem de antes e depois (aparecem as etiquetas "Antes" e "Depois");
 - cria até 4 galerias, muda os textos de cada uma, sobe, desce ou exclui;
