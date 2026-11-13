@@ -1094,7 +1094,9 @@
   const formEntrar = $('[data-form-entrar]');
   formEntrar.addEventListener('submit', async (ev) => {
     ev.preventDefault();
-    const senha = formEntrar.senha.value;
+    // espaços no começo ou no fim são ignorados, como na hora de criar a senha
+    // (o teclado do celular costuma colocar um espaço depois da palavra)
+    const senha = formEntrar.senha.value.trim();
     if (!senha) return mostrarErro(formEntrar, 'Digite a senha.');
     mostrarErro(formEntrar, '');
     travar(formEntrar, true, 'Entrando…');
