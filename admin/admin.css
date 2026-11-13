@@ -1,4 +1,4 @@
-/* Painel de fotos da Raquel Melo: mesmas cores e fontes do site, pensado para o celular. */
+/* Painel do site da Raquel Melo: mesmas cores e fontes do site, pensado para o celular. */
 
 @font-face {
   font-family: "Cormorant Garamond";
@@ -117,7 +117,8 @@ p { margin: 0; }
 .passos { display: grid; gap: 8px; margin: 0; padding-left: 1.3em; color: var(--ink-2); font-size: .9375rem; }
 
 .campo { display: grid; gap: 6px; }
-.campo > span { font-size: .875rem; font-weight: 600; color: var(--ink-2); }
+.campo > span, .campo > label { font-size: .875rem; font-weight: 600; color: var(--ink-2); }
+.campo .dica { font-size: .8125rem; line-height: 1.5; color: var(--ink-3); }
 .campo input, .campo select, .campo textarea {
   width: 100%;
   min-height: 48px;
@@ -284,6 +285,145 @@ p { margin: 0; }
 .espaco-acoes .botao { min-height: 44px; padding: 8px 14px; font-size: .875rem; }
 .nova-galeria { width: 100%; margin-top: 18px; }
 
+/* ---------- Abas (Fotos, Textos, Dúvidas, Contato) ---------- */
+
+.abas {
+  position: sticky;
+  top: var(--barra, 64px);
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  margin: -8px 0 22px;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--creme-2);
+  box-shadow: 0 0 0 6px var(--creme), 0 10px 24px -18px rgb(36 26 16 / .6);
+}
+.aba {
+  position: relative;
+  min-height: 44px;
+  padding: 6px 4px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--ink-2);
+  font-size: .875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color .2s, color .2s;
+}
+.aba[aria-selected="true"] { background: var(--espresso); color: var(--branco); }
+/* pontinho dourado: há alterações não publicadas nesta aba */
+.aba.alterada::after {
+  content: "";
+  position: absolute;
+  top: 7px;
+  right: 9px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ouro);
+}
+
+/* ---------- Editores de texto ---------- */
+
+.blocos { display: grid; gap: 14px; }
+.bloco summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 12px;
+  align-items: center;
+  min-height: 64px;
+  padding: 16px;
+  cursor: pointer;
+  list-style: none;
+}
+.bloco summary::-webkit-details-marker { display: none; }
+.bloco summary::after {
+  content: "";
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  width: 10px;
+  height: 10px;
+  margin-right: 4px;
+  border-right: 2px solid var(--bronze);
+  border-bottom: 2px solid var(--bronze);
+  transform: rotate(45deg) translateY(-3px);
+  transition: transform .2s;
+}
+.bloco[open] summary::after { transform: rotate(-135deg) translateY(-3px); }
+.bloco-titulo { font-family: var(--titulo); font-size: 1.5rem; font-weight: 500; line-height: 1.15; color: var(--espresso); }
+.bloco-onde { grid-column: 1; font-size: .8125rem; color: var(--ink-3); }
+.bloco-corpo { display: grid; gap: 16px; padding: 4px 16px 20px; border-top: 1px solid var(--linha); padding-top: 16px; }
+.bloco-fixo { display: grid; gap: 16px; padding: 20px 16px; }
+.bloco-desc { margin-top: -8px; font-size: .875rem; color: var(--ink-3); }
+.aviso-campo { padding: 10px 14px; border-radius: 12px; background: var(--creme); color: var(--ink-2); font-size: .875rem; line-height: 1.5; }
+.blocos > .aviso-campo { background: var(--creme-2); }
+
+.lista-editavel { display: grid; gap: 10px; }
+.lista-titulo { font-size: .875rem; font-weight: 700; color: var(--espresso); }
+.lista-vazia { padding: 10px 14px; border-radius: 12px; background: var(--creme); color: var(--ink-3); font-size: .875rem; }
+.itens { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.item { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--linha); border-radius: 16px; background: #FFFDF9; }
+.item-corpo { display: grid; gap: 10px; }
+/* horários: dia e horário lado a lado */
+.lista-lado .item-corpo { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
+.lista-lado .item { gap: 8px; }
+.item-acoes { display: flex; flex-wrap: wrap; gap: 6px; }
+.item-recolhivel { display: grid; gap: 10px; }
+.item-recolhivel[open] { gap: 12px; }
+.item-recolhivel summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  font-weight: 600;
+  color: var(--espresso);
+  cursor: pointer;
+  list-style: none;
+}
+.item-recolhivel summary::-webkit-details-marker { display: none; }
+.item-recolhivel summary::before { content: "+"; display: grid; place-items: center; flex: 0 0 26px; height: 26px; border-radius: 50%; background: var(--creme-2); color: var(--bronze); font-weight: 700; }
+.item-recolhivel[open] summary::before { content: "–"; }
+.item-recolhivel[open] > .item-corpo, .item-recolhivel[open] > .item-acoes { padding-top: 2px; }
+.mini {
+  min-height: 40px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--branco);
+  box-shadow: inset 0 0 0 1px #D9C7A6;
+  color: var(--espresso);
+  font-size: .8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.mini:disabled { opacity: .4; cursor: default; }
+.mini-perigo { margin-left: auto; color: var(--perigo); box-shadow: inset 0 0 0 1px #E3B3AA; }
+.botao-adicionar { width: 100%; }
+
+/* ---------- Vídeos ---------- */
+
+.grade-videos { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
+.miniatura-video { aspect-ratio: 9 / 16; }
+.miniatura-video .sem-capa { display: grid; place-items: center; height: 100%; color: var(--ink-3); font-size: .8125rem; font-weight: 600; }
+.miniatura-video .play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / .9);
+  color: var(--espresso);
+  font-size: .8rem;
+  transform: translate(-50%, -50%);
+}
+.janela-video { aspect-ratio: 9 / 16; max-height: 42vh; background: #1E150C; }
+
 /* ---------- Barra de publicar ---------- */
 
 .publicar {
@@ -329,5 +469,10 @@ progress { width: 100%; height: 10px; accent-color: var(--bronze); }
   .conteudo { padding-top: 32px; }
   .espaco { padding: 24px; }
   .grade { grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 12px; }
+  .grade-videos { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+  .bloco summary { padding: 18px 24px; }
+  .bloco-corpo { padding: 18px 24px 24px; }
+  .bloco-fixo { padding: 24px; }
+  .aba { font-size: .9375rem; }
   h1 { font-size: 2.5rem; }
 }

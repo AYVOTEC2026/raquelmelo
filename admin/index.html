@@ -4,20 +4,21 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex, nofollow">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self' https://api.github.com; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https://api.github.com; base-uri 'none'; form-action 'none'; object-src 'none'">
   <meta name="referrer" content="no-referrer">
-  <title>Painel de fotos | Raquel Melo</title>
+  <title>Painel do site | Raquel Melo</title>
   <meta name="theme-color" content="#241A10">
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="admin.css?v=20261112b">
-  <script src="admin.js?v=20261112b" defer></script>
+  <link rel="stylesheet" href="admin.css?v=20261112c">
+  <script src="conteudo.js?v=20261112c" defer></script>
+  <script src="admin.js?v=20261112c" defer></script>
 </head>
 <body>
   <header class="barra">
     <div class="barra-inner">
       <div class="barra-marca">
         <img src="../assets/img/logo-monogram-light.svg" alt="" width="114" height="101">
-        <span><strong>Raquel Melo</strong><small>Painel de fotos</small></span>
+        <span><strong>Raquel Melo</strong><small>Painel do site</small></span>
       </div>
       <nav class="barra-acoes" data-acoes hidden aria-label="Painel">
         <a class="barra-link" href="../" target="_blank" rel="noopener">Ver o site</a>
@@ -32,7 +33,7 @@
     <section class="tela" data-tela="entrar" hidden>
       <form class="cartao formulario" data-form-entrar novalidate>
         <h1>Entrar no painel</h1>
-        <p>Aqui você troca as fotos do site. Digite a sua senha.</p>
+        <p>Aqui você muda as fotos, os vídeos, os textos e os horários do site. Digite a sua senha.</p>
         <input type="text" name="usuario" value="raquel" autocomplete="username" hidden>
         <label class="campo">
           <span>Senha</span>
@@ -51,7 +52,7 @@
         <p>Feito uma vez. O painel guarda um token do GitHub protegido pela senha da Raquel: sem a senha, ninguém consegue usar o token.</p>
         <ol class="passos">
           <li>No GitHub da conta <strong>AYVOTEC2026</strong>, abra <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Fine-grained tokens › Generate new token</a>.</li>
-          <li>Nome: <em>Painel de fotos Raquel</em>. Validade: 1 ano.</li>
+          <li>Nome: <em>Painel do site Raquel</em>. Validade: 1 ano.</li>
           <li>Em <em>Repository access</em>, escolha <em>Only select repositories</em> e marque <strong>raquelmelo</strong>.</li>
           <li>Em <em>Permissions › Repository permissions</em>, deixe <strong>Contents</strong> como <em>Read and write</em>. Nada mais.</li>
           <li>Gere o token, copie e cole abaixo.</li>
@@ -73,12 +74,45 @@
 
     <!-- ============ Painel ============ -->
     <section class="tela" data-tela="painel" hidden>
-      <div class="intro">
-        <h1>Fotos do site</h1>
-        <p>Toque numa foto para trocar, mudar de lugar ou remover. Quando terminar, toque em <strong>Publicar no site</strong>. Espaço sem foto some do site sozinho.</p>
+      <div class="abas" role="tablist" aria-label="O que você quer mudar">
+        <button class="aba" type="button" role="tab" id="aba-fotos" aria-controls="painel-fotos" data-aba="fotos">Fotos</button>
+        <button class="aba" type="button" role="tab" id="aba-textos" aria-controls="painel-textos" data-aba="textos">Textos</button>
+        <button class="aba" type="button" role="tab" id="aba-duvidas" aria-controls="painel-duvidas" data-aba="duvidas">Dúvidas</button>
+        <button class="aba" type="button" role="tab" id="aba-contato" aria-controls="painel-contato" data-aba="contato">Contato</button>
       </div>
-      <div class="espacos" data-espacos></div>
-      <button class="botao botao-claro nova-galeria" type="button" data-nova-galeria>+ Criar nova galeria</button>
+
+      <div class="painel-aba" role="tabpanel" id="painel-fotos" aria-labelledby="aba-fotos" data-painel-aba="fotos">
+        <div class="intro">
+          <h1>Fotos e vídeos</h1>
+          <p>Toque numa foto para trocar, mudar de lugar ou remover. Quando terminar, toque em <strong>Publicar no site</strong>. Espaço sem foto some do site sozinho.</p>
+        </div>
+        <div class="espacos" data-espacos></div>
+        <button class="botao botao-claro nova-galeria" type="button" data-nova-galeria>+ Criar nova galeria</button>
+      </div>
+
+      <div class="painel-aba" role="tabpanel" id="painel-textos" aria-labelledby="aba-textos" data-painel-aba="textos" hidden>
+        <div class="intro">
+          <h1>Textos do site</h1>
+          <p>Toque numa parte do site para abrir e mudar os textos. Campo vazio some do site. Quando terminar, toque em <strong>Publicar no site</strong>.</p>
+        </div>
+        <div class="blocos" data-editor-textos></div>
+      </div>
+
+      <div class="painel-aba" role="tabpanel" id="painel-duvidas" aria-labelledby="aba-duvidas" data-painel-aba="duvidas" hidden>
+        <div class="intro">
+          <h1>Perguntas frequentes</h1>
+          <p>Adicione, mude a ordem, edite ou remova perguntas. Quando terminar, toque em <strong>Publicar no site</strong>.</p>
+        </div>
+        <div class="blocos" data-editor-duvidas></div>
+      </div>
+
+      <div class="painel-aba" role="tabpanel" id="painel-contato" aria-labelledby="aba-contato" data-painel-aba="contato" hidden>
+        <div class="intro">
+          <h1>Contato e horários</h1>
+          <p>WhatsApp, Instagram, endereço e horários aparecem em vários lugares do site: mude aqui e tudo se atualiza junto.</p>
+        </div>
+        <div class="blocos" data-editor-contato></div>
+      </div>
     </section>
   </main>
 
@@ -117,6 +151,24 @@
       </label>
       <button class="botao botao-perigo" type="button" data-jf-remover>Remover foto</button>
       <button class="botao botao-escuro" type="button" data-jf-pronto>Pronto</button>
+    </form>
+  </dialog>
+
+  <!-- ============ Janela de um vídeo ============ -->
+  <dialog class="janela" data-janela-video aria-labelledby="jv-titulo">
+    <form class="janela-corpo" data-jv-form>
+      <h2 id="jv-titulo" data-jv-titulo>Vídeo</h2>
+      <video class="janela-previa janela-video" data-jv-previa muted playsinline controls preload="metadata"></video>
+      <label class="campo">
+        <span>Legenda (aparece embaixo do vídeo)</span>
+        <input type="text" maxlength="60" data-jv-legenda placeholder="Ex.: Finalização dos cachos iluminados">
+      </label>
+      <div class="linha-botoes">
+        <button class="botao botao-claro" type="button" data-jv-esquerda>‹ Mais para o início</button>
+        <button class="botao botao-claro" type="button" data-jv-direita>Mais para o fim ›</button>
+      </div>
+      <button class="botao botao-perigo" type="button" data-jv-remover>Remover vídeo</button>
+      <button class="botao botao-escuro" type="button" data-jv-pronto>Pronto</button>
     </form>
   </dialog>
 

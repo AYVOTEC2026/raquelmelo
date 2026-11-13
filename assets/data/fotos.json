@@ -365,5 +365,16 @@
       "legenda": "Loiro claro",
       "descricao": "Cabelo loiro claro, liso e uniforme"
     }
+  ],
+  "videos": [
+    {
+      "id": "cachos-iluminados",
+      "video": "assets/video/raquel-melo-cachos-iluminados.mp4",
+      "capa": "assets/img/cachos-iluminados-poster.jpg",
+      "largura": 720,
+      "altura": 1280,
+      "legenda": "Finalização dos cachos iluminados",
+      "descricao": "Raquel Melo ajeita os cachos iluminados de uma cliente no salão"
+    }
   ]
 }

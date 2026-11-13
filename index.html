@@ -32,7 +32,7 @@
   <link rel="preload" href="assets/fonts/cormorant-garamond-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/great-vibes-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="assets/css/style.css?v=20261112b">
+  <link rel="stylesheet" href="assets/css/style.css?v=20261112c">
 
   <script>
     /* Liga as animações só quando o navegador suporta e a pessoa não pediu menos movimento.
@@ -43,14 +43,22 @@
       d.documentElement.classList.add('anim');
       setTimeout(function () { if (!window.__animPronta) d.documentElement.classList.remove('anim'); }, 4000);
     })(document);
-    /* As fotos do site vêm de assets/data/fotos.json (editado pelo painel da Raquel).
-       "no-cache" confere se há versão nova a cada visita, sem baixar de novo se não mudou. */
-    window.__fotos = window.fetch
-      ? fetch('assets/data/fotos.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
-      : null;
+    /* Fotos e vídeos vêm de assets/data/fotos.json; textos, contato e horários, de
+       assets/data/conteudo.json. Os dois são editados pelo painel da Raquel (/admin/).
+       "no-cache" confere se há versão nova a cada visita, sem baixar de novo se não mudou.
+       Enquanto eles chegam, o texto do topo espera para entrar (no máximo 2,5 s). */
+    (function (d) {
+      if (!window.fetch) return;
+      var pegar = function (c) {
+        return fetch(c, { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+      };
+      window.__fotos = pegar('assets/data/fotos.json');
+      window.__conteudo = pegar('assets/data/conteudo.json');
+      d.documentElement.classList.add('esperando');
+      setTimeout(function () { d.documentElement.classList.remove('esperando'); }, 2500);
+    })(document);
   </script>
-  <script src="assets/js/config.js?v=20261112b" defer></script>
-  <script src="assets/js/main.js?v=20261112b" defer></script>
+  <script src="assets/js/main.js?v=20261112c" defer></script>
 </head>
 <body>
   <a class="pular" href="#conteudo">Pular para o conteúdo</a>
@@ -108,7 +116,7 @@
       <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-whatsapp"></use></svg>
       Agendar pelo WhatsApp
     </a>
-    <p class="menu-nota">✦ Atendimento somente com horário agendado</p>
+    <p class="menu-nota" data-c-aviso="menu">✦ Atendimento somente com horário agendado</p>
   </nav>
 
   <main id="conteudo">
@@ -120,11 +128,11 @@
           <p class="sobretitulo hero-sobretitulo">Raquel Melo · Conceito de Beleza<span data-cidade-sufixo></span></p>
           <h1 class="hero-titulo" id="hero-titulo">
             <span class="sr-only">Raquel Melo, </span>
-            <span class="script">Colorista</span>
-            <span class="serif">de todas as cores</span>
+            <span class="script" data-c="topo.script">Colorista</span>
+            <span class="serif" data-c="topo.serif">de todas as cores</span>
           </h1>
-          <p class="hero-especialidades">Coloração · Mechas · Cores fantasia</p>
-          <p class="hero-lead">Dos tons naturais às cores fantasia: coloração e mechas feitas sob medida para você, com técnica apurada e cuidado com a saúde dos fios.</p>
+          <p class="hero-especialidades" data-c="topo.especialidades">Coloração · Mechas · Cores fantasia</p>
+          <p class="hero-lead" data-c="topo.texto" data-c-rico>Dos tons naturais às cores fantasia: coloração e mechas feitas sob medida para você, com técnica apurada e cuidado com a saúde dos fios.</p>
           <a class="btn btn-escuro btn-anel btn-grande hero-cta" href="#horarios" data-wa="Olá, Raquel! Vim pelo site e gostaria de agendar um horário." data-hero-cta>
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-whatsapp"></use></svg>
             Agendar pelo WhatsApp
@@ -147,9 +155,9 @@
     </section>
 
     <!-- ============================== Fitas de serviços ============================== -->
-    <div class="faixa" aria-hidden="true">
-      <div class="fita fita-escura"><div class="fita-trilho"><span>Avaliação personalizada</span><span>Cuidado com o fio</span><span>Técnica sob medida</span><span>Atendimento com hora marcada</span><span>Cor que combina com você</span></div></div>
-      <div class="fita fita-clara"><div class="fita-trilho"><span>Coloração</span><span>Loiros</span><span>Morena iluminada</span><span>Cores fantasia</span><span>Mechas em cachos</span><span>Ruivos e acobreados</span><span>Tratamentos capilares</span><span>Corte e finalização</span></div></div>
+    <div class="faixa" aria-hidden="true" data-c-fitas>
+      <div class="fita fita-escura"><div class="fita-trilho" data-c-lista="fitas.escura"><span>Avaliação personalizada</span><span>Cuidado com o fio</span><span>Técnica sob medida</span><span>Atendimento com hora marcada</span><span>Cor que combina com você</span></div></div>
+      <div class="fita fita-clara"><div class="fita-trilho" data-c-lista="fitas.clara"><span>Coloração</span><span>Loiros</span><span>Morena iluminada</span><span>Cores fantasia</span><span>Mechas em cachos</span><span>Ruivos e acobreados</span><span>Tratamentos capilares</span><span>Corte e finalização</span></div></div>
     </div>
 
     <!-- ============================== Sobre ============================== -->
@@ -158,12 +166,12 @@
         <div class="sobre-fotos" data-sobre-fotos></div>
 
         <div class="sobre-texto" data-revelar>
-          <p class="sobretitulo">Prazer, eu sou a Raquel</p>
-          <h2 class="titulo-misto titulo-linha" id="sobre-titulo"><span class="script">Sobre a</span> <span class="serif">Raquel</span></h2>
-          <p>Sou cabeleireira e colorista. Para mim, a cor certa não é a da moda: é a que conversa com o seu tom de pele, com a sua rotina e com a saúde do seu cabelo.</p>
-          <p>Por isso, cada atendimento começa com uma conversa. Entendo o que você deseja, avalio o histórico dos seus fios e só então escolho a técnica, seja um loiro luminoso, uma morena iluminada, mechas em cachos ou uma cor fantasia.</p>
-          <p>Dos tons naturais às cores mais ousadas, a cor é planejada para ficar bonita por mais tempo, com preparo do fio e orientação de cuidados para casa.</p>
-          <p class="assinatura">Raquel Melo · Colorista e cabeleireira</p>
+          <p class="sobretitulo" data-c="sobre.sobretitulo">Prazer, eu sou a Raquel</p>
+          <h2 class="titulo-misto titulo-linha" id="sobre-titulo"><span class="script" data-c="sobre.script">Sobre a</span> <span class="serif" data-c="sobre.serif">Raquel</span></h2>
+          <p data-c-par="sobre.texto">Sou cabeleireira e colorista. Para mim, a cor certa não é a da moda: é a que conversa com o seu tom de pele, com a sua rotina e com a saúde do seu cabelo.</p>
+          <p data-c-par="sobre.texto">Por isso, cada atendimento começa com uma conversa. Entendo o que você deseja, avalio o histórico dos seus fios e só então escolho a técnica, seja um loiro luminoso, uma morena iluminada, mechas em cachos ou uma cor fantasia.</p>
+          <p data-c-par="sobre.texto">Dos tons naturais às cores mais ousadas, a cor é planejada para ficar bonita por mais tempo, com preparo do fio e orientação de cuidados para casa.</p>
+          <p class="assinatura" data-c="sobre.assinatura">Raquel Melo · Colorista e cabeleireira</p>
         </div>
       </div>
       <span class="marca-dagua sobre-marca-dagua" aria-hidden="true" data-deriva>Raquel</span>
@@ -175,21 +183,21 @@
 
     <!-- ============================== Produtos (STIJL) ==============================
          A foto vem de assets/data/fotos.json ("produtos"); sem foto, fica só o texto. -->
-    <section class="secao produtos" id="produtos" aria-labelledby="produtos-titulo">
+    <section class="secao produtos" id="produtos" aria-labelledby="produtos-titulo" data-c-secao="produtos">
       <div class="container produtos-grid">
         <div class="produtos-texto" data-revelar>
-          <p class="sobretitulo">Os produtos do salão</p>
-          <h2 class="titulo-misto titulo-linha" id="produtos-titulo"><span class="script">Nutrição</span> <span class="serif">com algas marinhas</span></h2>
-          <p class="produtos-lead">No salão, usamos a <strong>STIJL</strong>, linha francesa de nutrição com algas marinhas.</p>
-          <p class="produtos-linha">Linha Hydra Glow · Hidra Brilho</p>
-          <ul class="produtos-lista">
+          <p class="sobretitulo" data-c="produtos.sobretitulo">Os produtos do salão</p>
+          <h2 class="titulo-misto titulo-linha" id="produtos-titulo"><span class="script" data-c="produtos.script">Nutrição</span> <span class="serif" data-c="produtos.serif">com algas marinhas</span></h2>
+          <p class="produtos-lead" data-c="produtos.texto" data-c-rico>No salão, usamos a <strong>STIJL</strong>, linha francesa de nutrição com algas marinhas.</p>
+          <p class="produtos-linha" data-c="produtos.linha">Linha Hydra Glow · Hidra Brilho</p>
+          <ul class="produtos-lista" data-c-produtos>
             <li><strong>Shampoo Balanceado</strong><span>Hidratação emoliente anti-frizz</span></li>
             <li><strong>Máscara Restauradora</strong><span>Hidratação emoliente anti-frizz</span></li>
             <li><strong>Leave-in e Terapia Noturna</strong><span>Tratamento 2 em 1</span></li>
             <li><strong>Sérum Zero Frizz</strong></li>
             <li><strong>Máscara Bioliquida S.O.S Capilar</strong></li>
           </ul>
-          <a class="btn btn-escuro btn-anel" href="#horarios" data-wa="Olá, Raquel! Vi no site os tratamentos com STIJL e gostaria de agendar um horário.">Agendar um tratamento</a>
+          <a class="btn btn-escuro btn-anel" href="#horarios" data-wa="Olá, Raquel! Vi no site os tratamentos com STIJL e gostaria de agendar um horário." data-c="produtos.botao">Agendar um tratamento</a>
         </div>
         <figure class="foto produtos-foto" data-produtos-foto data-revelar style="--d: 120ms"></figure>
       </div>
@@ -197,41 +205,27 @@
     </section>
 
     <!-- ============================== Vídeos ============================== -->
-    <!-- Para incluir um vídeo novo: coloque o .mp4 e a capa em assets/ e copie um <figure class="polaroid polaroid-video">. -->
-    <section class="secao galeria galeria-videos" id="videos" aria-labelledby="videos-titulo">
+    <!-- Os vídeos vêm de assets/data/fotos.json ("videos"), com o modelo #modelo-video (fim da página).
+         Sem vídeo, a seção não aparece. -->
+    <section class="secao galeria galeria-videos" id="videos" aria-labelledby="videos-titulo" data-c-secao="videos">
       <div class="container cabeca-centro" data-revelar>
         <span class="marca-dagua marca-dagua-serifa" aria-hidden="true" data-deriva>Vídeos</span>
-        <h2 class="titulo-misto" id="videos-titulo"><span class="script">Vídeos</span> <span class="serif">do salão</span></h2>
-        <p class="subtitulo-caps">Veja o trabalho de perto</p>
+        <h2 class="titulo-misto" id="videos-titulo"><span class="script" data-c="videos.script">Vídeos</span> <span class="serif" data-c="videos.serif">do salão</span></h2>
+        <p class="subtitulo-caps" data-c="videos.subtitulo">Veja o trabalho de perto</p>
       </div>
 
       <div class="carrossel carrossel-videos" data-carrossel role="region" aria-roledescription="carrossel" aria-label="Vídeos do salão">
         <button class="carrossel-seta carrossel-seta-anterior" type="button" data-anterior aria-label="Vídeo anterior" aria-controls="trilho-videos">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-seta-esquerda"></use></svg>
         </button>
-        <div class="carrossel-trilho" id="trilho-videos" data-trilho>
-          <figure class="polaroid polaroid-video">
-            <div class="video-quadro">
-              <video muted playsinline loop preload="none" data-video
-                     poster="assets/img/cachos-iluminados-poster.jpg" width="720" height="1280"
-                     aria-label="Vídeo: Raquel Melo ajeita os cachos iluminados de uma cliente no salão">
-                <source src="assets/video/raquel-melo-cachos-iluminados.mp4" type="video/mp4">
-              </video>
-              <button class="video-botao" type="button" data-video-botao data-estado="pausado" aria-label="Reproduzir vídeo">
-                <svg class="icon icone-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
-                <svg class="icon icone-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
-              </button>
-            </div>
-            <figcaption class="polaroid-legenda">Finalização dos cachos iluminados</figcaption>
-          </figure>
-        </div>
+        <div class="carrossel-trilho" id="trilho-videos" data-trilho data-videos></div>
         <button class="carrossel-seta carrossel-seta-proxima" type="button" data-proximo aria-label="Próximo vídeo" aria-controls="trilho-videos">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-seta-direita"></use></svg>
         </button>
       </div>
 
       <div class="container galeria-rodape" data-revelar>
-        <p>Do primeiro toque à finalização: veja como cada detalhe é feito no salão, com calma e técnica.</p>
+        <p data-c="videos.texto">Do primeiro toque à finalização: veja como cada detalhe é feito no salão, com calma e técnica.</p>
         <a class="btn btn-escuro btn-anel" href="#horarios" data-wa="Olá, Raquel! Vi os vídeos no site e gostaria de agendar um horário.">Agendar</a>
       </div>
     </section>
@@ -241,7 +235,7 @@
       <div class="container">
         <div class="cabeca-centro" data-revelar>
           <span class="marca-dagua" aria-hidden="true" data-deriva>Agenda</span>
-          <p class="sobretitulo">Visite o salão</p>
+          <p class="sobretitulo" data-c="horarios.sobretitulo">Visite o salão</p>
           <h2 class="titulo-misto" id="horarios-titulo"><span class="script">Horários</span> <span class="serif">&amp; como chegar</span></h2>
         </div>
 
@@ -250,7 +244,7 @@
             <h3 class="rotulo">Horário de atendimento</h3>
             <table class="tabela-horarios" data-horarios hidden><tbody></tbody></table>
             <p class="horarios-vazio" data-horarios-vazio>Os horários serão publicados aqui em breve.</p>
-            <p class="aviso-agendamento">✦ Atendimento somente com horário agendado ✦</p>
+            <p class="aviso-agendamento" data-c-aviso="cartao">✦ Atendimento somente com horário agendado ✦</p>
 
             <div class="horarios-bloco" data-endereco-bloco hidden>
               <h3 class="rotulo">Endereço</h3>
@@ -275,12 +269,12 @@
     </section>
 
     <!-- ============================== Perguntas frequentes ============================== -->
-    <section class="secao duvidas" id="duvidas" aria-labelledby="duvidas-titulo">
+    <section class="secao duvidas" id="duvidas" aria-labelledby="duvidas-titulo" data-c-secao="duvidas">
       <div class="container duvidas-inner">
         <div data-revelar>
-          <p class="sobretitulo">Tire suas dúvidas</p>
-          <h2 class="duvidas-titulo" id="duvidas-titulo">Perguntas frequentes</h2>
-          <p class="duvidas-intro">Dúvidas comuns sobre o atendimento da Raquel Melo.</p>
+          <p class="sobretitulo" data-c="duvidas.sobretitulo">Tire suas dúvidas</p>
+          <h2 class="duvidas-titulo" id="duvidas-titulo" data-c="duvidas.titulo">Perguntas frequentes</h2>
+          <p class="duvidas-intro" data-c="duvidas.intro">Dúvidas comuns sobre o atendimento da Raquel Melo.</p>
         </div>
 
         <div class="faq" data-faq data-revelar>
@@ -357,7 +351,7 @@
         <img class="rodape-monograma" src="assets/img/logo-monogram.svg" alt="" width="114" height="101" loading="lazy">
         <p class="rodape-nome">Raquel Melo</p>
         <p class="rodape-sub">Conceito de Beleza</p>
-        <p class="rodape-descricao">Coloração, mechas e cores fantasia feitas sob medida, com cuidado com a saúde dos fios.</p>
+        <p class="rodape-descricao" data-c="rodape.descricao">Coloração, mechas e cores fantasia feitas sob medida, com cuidado com a saúde dos fios.</p>
       </div>
 
       <div class="rodape-polaroids" data-rodape-fotos aria-hidden="true"></div>
@@ -412,6 +406,20 @@
         <a class="btn btn-escuro btn-anel" href="#horarios" data-wa="">Agendar</a>
       </div>
     </section>
+  </template>
+
+  <!-- Modelo de cada vídeo (preenchido pelo main.js) -->
+  <template id="modelo-video">
+    <figure class="polaroid polaroid-video">
+      <div class="video-quadro">
+        <video muted playsinline loop preload="none" data-video width="720" height="1280"></video>
+        <button class="video-botao" type="button" data-video-botao data-estado="pausado" aria-label="Reproduzir vídeo">
+          <svg class="icon icone-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+          <svg class="icon icone-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
+        </button>
+      </div>
+      <figcaption class="polaroid-legenda"></figcaption>
+    </figure>
   </template>
 
   <!-- Foto ampliada (abre ao tocar numa foto das galerias) -->

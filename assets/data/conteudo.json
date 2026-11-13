@@ -1,0 +1,128 @@
+{
+  "versao": 1,
+  "atualizado": "2026-11-12T12:00:00Z",
+  "contato": {
+    "whatsapp": "5585987261704",
+    "mensagemPadrao": "Olá, Raquel! Vim pelo site e gostaria de agendar um horário.",
+    "instagram": "raquelmeloqueiroz",
+    "cidade": "Fortaleza · CE",
+    "endereco": "R. Cel. Jaime Rolemberg, 75 - Maraponga, Fortaleza - CE, 60712-175",
+    "mapsUrl": "",
+    "horarios": [
+      { "dia": "Terça-feira", "horario": "09:00 – 18:00" },
+      { "dia": "Quarta-feira", "horario": "09:00 – 18:00" },
+      { "dia": "Quinta-feira", "horario": "09:00 – 18:00" },
+      { "dia": "Sexta-feira", "horario": "08:00 – 18:00" },
+      { "dia": "Sábado", "horario": "08:00 – 18:00" },
+      { "dia": "Domingo e segunda", "horario": "fechado" }
+    ],
+    "pagamento": [],
+    "google": "",
+    "notaGoogle": "",
+    "youtube": "",
+    "tiktok": ""
+  },
+  "topo": {
+    "script": "Colorista",
+    "serif": "de todas as cores",
+    "especialidades": "Coloração · Mechas · Cores fantasia",
+    "texto": "Dos tons naturais às cores fantasia: coloração e mechas feitas sob medida para você, com técnica apurada e cuidado com a saúde dos fios."
+  },
+  "fitas": {
+    "mostrar": true,
+    "escura": [
+      "Avaliação personalizada",
+      "Cuidado com o fio",
+      "Técnica sob medida",
+      "Atendimento com hora marcada",
+      "Cor que combina com você"
+    ],
+    "clara": [
+      "Coloração",
+      "Loiros",
+      "Morena iluminada",
+      "Cores fantasia",
+      "Mechas em cachos",
+      "Ruivos e acobreados",
+      "Tratamentos capilares",
+      "Corte e finalização"
+    ]
+  },
+  "sobre": {
+    "sobretitulo": "Prazer, eu sou a Raquel",
+    "script": "Sobre a",
+    "serif": "Raquel",
+    "texto": "Sou cabeleireira e colorista. Para mim, a cor certa não é a da moda: é a que conversa com o seu tom de pele, com a sua rotina e com a saúde do seu cabelo.\nPor isso, cada atendimento começa com uma conversa. Entendo o que você deseja, avalio o histórico dos seus fios e só então escolho a técnica, seja um loiro luminoso, uma morena iluminada, mechas em cachos ou uma cor fantasia.\nDos tons naturais às cores mais ousadas, a cor é planejada para ficar bonita por mais tempo, com preparo do fio e orientação de cuidados para casa.",
+    "assinatura": "Raquel Melo · Colorista e cabeleireira"
+  },
+  "produtos": {
+    "mostrar": true,
+    "sobretitulo": "Os produtos do salão",
+    "script": "Nutrição",
+    "serif": "com algas marinhas",
+    "texto": "No salão, usamos a **STIJL**, linha francesa de nutrição com algas marinhas.",
+    "linha": "Linha Hydra Glow · Hidra Brilho",
+    "itens": [
+      { "nome": "Shampoo Balanceado", "detalhe": "Hidratação emoliente anti-frizz" },
+      { "nome": "Máscara Restauradora", "detalhe": "Hidratação emoliente anti-frizz" },
+      { "nome": "Leave-in e Terapia Noturna", "detalhe": "Tratamento 2 em 1" },
+      { "nome": "Sérum Zero Frizz", "detalhe": "" },
+      { "nome": "Máscara Bioliquida S.O.S Capilar", "detalhe": "" }
+    ],
+    "botao": "Agendar um tratamento"
+  },
+  "videos": {
+    "mostrar": true,
+    "script": "Vídeos",
+    "serif": "do salão",
+    "subtitulo": "Veja o trabalho de perto",
+    "texto": "Do primeiro toque à finalização: veja como cada detalhe é feito no salão, com calma e técnica."
+  },
+  "horarios": {
+    "sobretitulo": "Visite o salão",
+    "aviso": "Atendimento somente com horário agendado"
+  },
+  "duvidas": {
+    "mostrar": true,
+    "sobretitulo": "Tire suas dúvidas",
+    "titulo": "Perguntas frequentes",
+    "intro": "Dúvidas comuns sobre o atendimento da Raquel Melo.",
+    "perguntas": [
+      {
+        "pergunta": "Como agendar um horário?",
+        "resposta": "Pelo WhatsApp. Conte o que você deseja e, se puder, envie uma foto do seu cabelo com luz natural: isso ajuda a Raquel a orientar você antes do atendimento."
+      },
+      {
+        "pergunta": "Quais serviços a Raquel oferece?",
+        "resposta": "- Coloração e cobertura de fios brancos\n- Loiros, do mel ao platinado\n- Morena iluminada\n- Mechas em cabelo cacheado\n- Ruivos e acobreados\n- Cores fantasia: rosa, lilás, azul, vermelho e outras\n- Tratamentos capilares: hidratação, nutrição e reconstrução\n- Corte e finalização\nO valor depende do comprimento, do volume e da técnica escolhida. Peça seu orçamento pelo WhatsApp."
+      },
+      {
+        "pergunta": "Quais produtos a Raquel usa?",
+        "resposta": "A STIJL, linha francesa de nutrição com algas marinhas. No salão, ela usa a linha Hydra Glow (Hidra Brilho): shampoo balanceado, máscara restauradora, leave-in e terapia noturna, sérum Zero Frizz e máscara bioliquida S.O.S Capilar."
+      },
+      {
+        "pergunta": "Cabelo cacheado pode fazer mechas?",
+        "resposta": "Pode. Com a técnica certa e cuidado com a fibra, a luz entra sem desmanchar a curvatura. O vídeo desta página mostra um exemplo."
+      },
+      {
+        "pergunta": "Preciso fazer uma avaliação antes?",
+        "resposta": "Para mudanças de cor e mechas, a avaliação é o primeiro passo: ela mostra o histórico químico e a saúde dos fios e define a técnica mais segura para o resultado que você quer."
+      },
+      {
+        "pergunta": "Quanto tempo leva uma coloração ou mechas?",
+        "resposta": "Depende do comprimento, do volume e do resultado desejado. Mechas costumam levar algumas horas; na avaliação você recebe a previsão para o seu caso."
+      },
+      {
+        "pergunta": "Quanto tempo dura uma cor fantasia?",
+        "resposta": "Cores fantasia desbotam mais rápido que os tons naturais. Com shampoo adequado, água fria e retoques, a cor dura algumas semanas; na avaliação a Raquel indica a manutenção ideal para o seu cabelo."
+      },
+      {
+        "pergunta": "Como manter a cor bonita por mais tempo?",
+        "resposta": "Use shampoo e condicionador para cabelos com coloração, evite água muito quente, proteja os fios do sol e do cloro e mantenha os tratamentos em dia. No fim do atendimento você recebe o intervalo ideal de retorno."
+      }
+    ]
+  },
+  "rodape": {
+    "descricao": "Coloração, mechas e cores fantasia feitas sob medida, com cuidado com a saúde dos fios."
+  }
+}

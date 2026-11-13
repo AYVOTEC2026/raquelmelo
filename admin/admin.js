@@ -1,14 +1,17 @@
-/* Painel de fotos da Raquel Melo.
+/* Painel do site da Raquel Melo.
 
    Como funciona (o site é estático, no GitHub Pages):
-   - As fotos do site estão listadas em assets/data/fotos.json. O site lê esse arquivo e monta
-     o topo, o "Sobre", as galerias e o rodapé. Espaço sem foto some sozinho.
-   - O painel edita esse arquivo e envia as fotos novas direto para o repositório, num único
-     commit, pela API do GitHub. O GitHub Pages republica o site em alguns minutos.
+   - As fotos e os vídeos do site estão listados em assets/data/fotos.json; os textos, as
+     perguntas frequentes, o contato e os horários, em assets/data/conteudo.json. O site lê os
+     dois arquivos e monta as seções. Espaço sem foto some sozinho.
+   - O painel edita esses arquivos (a parte dos textos fica em conteudo.js) e envia tudo direto
+     para o repositório, num único commit, pela API do GitHub. O GitHub Pages republica o site
+     em alguns minutos.
    - O acesso usa um token do GitHub (só deste repositório, só "Contents"). Ele fica salvo em
      admin/acesso.json cifrado com a senha da Raquel (AES-GCM + PBKDF2); sem a senha não serve.
    - As fotos são reduzidas no próprio aparelho (600 e 1200 px, JPEG), o que também apaga os
-     dados escondidos da foto, como a localização. */
+     dados escondidos da foto, como a localização. Os vídeos vão como estão (MP4 em H.264, até
+     30 MB), com uma capa tirada do próprio vídeo. */
 (() => {
   'use strict';
 
@@ -16,12 +19,17 @@
   const RAMO = window.__RAMO_TESTE || 'main';
   const API = 'https://api.github.com/repos/' + REPO;
   const CAMINHO_FOTOS = 'assets/data/fotos.json';
+  const CAMINHO_CONTEUDO = 'assets/data/conteudo.json';
   const CAMINHO_ACESSO = 'admin/acesso.json';
   const ITERACOES = 600000;
-  const LIMITES = { topo: 1, sobre: 3, galeria: 15, produtos: 1, rodape: 3, galerias: 4 };
+  const LIMITES = { topo: 1, sobre: 3, galeria: 15, produtos: 1, rodape: 3, galerias: 4, videos: 6 };
   const LARGURAS = [600, 1200];
+  const VIDEO_MAX_MB = 30;
   const SITE = new URL('../', window.location.href);
   const CHAVE_SESSAO = 'rm-painel';
+  const CHAVE_ABA = 'rm-painel-aba';
+  const ABAS = ['fotos', 'textos', 'duvidas', 'contato'];
+  const Editor = window.PainelConteudo;
 
   const $ = (sel, raiz = document) => raiz.querySelector(sel);
   const $$ = (sel, raiz = document) => Array.from(raiz.querySelectorAll(sel));
@@ -37,11 +45,15 @@
   /* ---------- Estado ---------- */
 
   let token = '';
-  let dados = null;
+  let dados = null;          // fotos.json (fotos e vídeos)
   let original = '';
   let shaFotos = '';
-  const novos = new Map();   // id da foto -> arquivos ainda não enviados [{ caminho, blob }]
-  const previas = new Map(); // id da foto -> endereço local da miniatura (fotos recém-enviadas)
+  let conteudo = null;       // conteudo.json (textos, perguntas, contato)
+  let originalConteudo = '';
+  let shaConteudo = '';
+  const novos = new Map();   // id da foto ou do vídeo -> arquivos ainda não enviados [{ caminho, blob }]
+  const previas = new Map(); // id -> endereço local da miniatura (fotos e vídeos recém-enviados)
+  const videosLocais = new Map(); // id do vídeo novo -> endereço local do vídeo (para a prévia)
   const textosAbertos = new Set();
   let ocupado = false;
 
@@ -169,17 +181,41 @@
       ['script', 'serif', 'subtitulo', 'texto'].forEach((k) => { g[k] = typeof g[k] === 'string' ? g[k] : ''; });
       return g;
     });
+    d.videos = (Array.isArray(d.videos) ? d.videos : []).filter((v) => v && typeof v.video === 'string');
     return d;
   };
-  const carregarDados = async () => {
-    const r = await gh(`/contents/${CAMINHO_FOTOS}?ref=${encodeURIComponent(RAMO)}`);
-    shaFotos = r.sha;
-    dados = normalizar(JSON.parse(b64ParaTexto(r.content)));
-    original = JSON.stringify(dados);
+  const lerArquivo = async (caminho) => {
+    const r = await gh(`/contents/${caminho}?ref=${encodeURIComponent(RAMO)}`);
+    return { sha: r.sha, json: JSON.parse(b64ParaTexto(r.content)) };
   };
-  const mudou = () => !!dados && JSON.stringify(dados) !== original;
+  const carregarDados = async () => {
+    const [f, c] = await Promise.all([lerArquivo(CAMINHO_FOTOS), lerArquivo(CAMINHO_CONTEUDO)]);
+    shaFotos = f.sha;
+    dados = normalizar(f.json);
+    original = JSON.stringify(dados);
+    shaConteudo = c.sha;
+    conteudo = Editor.normalizar(c.json);
+    originalConteudo = JSON.stringify(conteudo);
+  };
+  const mudouFotos = () => !!dados && JSON.stringify(dados) !== original;
+  const mudouConteudo = () => !!conteudo && JSON.stringify(conteudo) !== originalConteudo;
+  const mudou = () => mudouFotos() || mudouConteudo();
+  // quais abas têm alterações ainda não publicadas (mostra um pontinho na aba)
+  const PARTES = { textos: ['topo', 'fitas', 'sobre', 'produtos', 'videos', 'horarios', 'rodape'], duvidas: ['duvidas'], contato: ['contato'] };
+  const abasAlteradas = () => {
+    const alt = new Set();
+    if (mudouFotos()) alt.add('fotos');
+    if (mudouConteudo()) {
+      const antes = JSON.parse(originalConteudo);
+      Object.entries(PARTES).forEach(([aba, chaves]) => {
+        if (chaves.some((k) => JSON.stringify(conteudo[k]) !== JSON.stringify(antes[k]))) alt.add(aba);
+      });
+    }
+    return alt;
+  };
   const todasFotos = (d) => [...d.topo, ...d.sobre, ...d.galerias.flatMap((g) => g.fotos), ...d.produtos, ...d.rodape];
   const arquivosDe = (f) => f.larguras.flatMap((w) => ((Array.isArray(f.formatos) && f.formatos.length) ? f.formatos : ['jpg']).map((x) => `${f.arquivo}-${w}.${x}`));
+  const arquivosVideo = (v) => [v.video, v.capa].filter((c) => typeof c === 'string' && c);
   const nomeGaleria = (g) => [g.script, g.serif].map((t) => String(t || '').trim()).filter(Boolean).join(' ') || 'Galeria sem nome';
   const slug = (t) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 30) || 'foto';
 
@@ -330,9 +366,55 @@
   const desenhar = () => {
     if (!dados) return;
     caixa.textContent = '';
-    espacos().forEach((e) => caixa.append(cartaoEspaco(e)));
+    espacos().forEach((e) => {
+      caixa.append(cartaoEspaco(e));
+      // os vídeos ficam na mesma ordem do site: depois dos produtos, antes do rodapé
+      if (e.chave === 'produtos') caixa.append(cartaoVideos());
+    });
     $('[data-nova-galeria]').hidden = dados.galerias.length >= LIMITES.galerias;
     atualizarBarra();
+  };
+
+  const capaVideo = (v) => previas.get(v.id) || (v.capa ? new URL(v.capa, SITE).href : '');
+
+  const cartaoVideos = () => {
+    const lista = dados.videos;
+    const sec = el('section', { class: 'espaco cartao', 'aria-label': 'Vídeos' });
+    const cabeca = el('div', { class: 'espaco-cabeca' });
+    const t = el('div');
+    t.append(el('h2', {}, 'Vídeos'), el('p', {}, `Vídeos em pé, como os reels. Envie em MP4, com até ${VIDEO_MAX_MB} MB. No site, eles tocam sem som.`));
+    cabeca.append(t, el('span', { class: 'contador' + (lista.length >= LIMITES.videos ? ' cheio' : '') }, `${lista.length} de ${LIMITES.videos}`));
+    sec.append(cabeca);
+    if (!lista.length) sec.append(el('p', { class: 'espaco-vazio' }, 'Sem vídeos: esta parte não aparece no site.'));
+    const grade = el('ul', { class: 'grade grade-videos' });
+    lista.forEach((v, i) => {
+      const li = el('li');
+      const b = el('button', { class: 'miniatura miniatura-video', type: 'button', 'aria-label': `Vídeo ${i + 1}${v.legenda ? ': ' + v.legenda : ''}. Tocar para editar` });
+      const capa = capaVideo(v);
+      if (capa) b.append(el('img', { src: capa, alt: '', loading: 'lazy' }));
+      else b.append(el('span', { class: 'sem-capa' }, 'Vídeo'));
+      b.append(el('span', { class: 'ordem' }, String(i + 1)), el('span', { class: 'play', 'aria-hidden': 'true' }, '▶'));
+      if (novos.has(v.id)) b.append(el('span', { class: 'marca marca-nova' }, 'Novo'));
+      else if (v.legenda) b.append(el('span', { class: 'marca' }, v.legenda));
+      b.addEventListener('click', () => abrirVideo(v.id));
+      li.append(b);
+      grade.append(li);
+    });
+    if (lista.length < LIMITES.videos) {
+      const li = el('li');
+      const rotulo = el('label', { class: 'miniatura miniatura-video adicionar' });
+      const entrada = el('input', { type: 'file', accept: 'video/mp4,video/quicktime,video/*,.mp4,.m4v,.mov', 'aria-label': 'Adicionar vídeo' });
+      entrada.addEventListener('change', () => {
+        const arquivo = entrada.files && entrada.files[0];
+        entrada.value = '';
+        if (arquivo) adicionarVideo(arquivo);
+      });
+      rotulo.append(el('span', { class: 'mais', 'aria-hidden': 'true' }, '+'), document.createTextNode('Adicionar vídeo'), entrada);
+      li.append(rotulo);
+      grade.append(li);
+    }
+    sec.append(grade);
+    return sec;
   };
 
   const cartaoEspaco = (e) => {
@@ -424,11 +506,59 @@
     const barra = $('[data-barra-publicar]');
     const tem = mudou();
     const qtdNovas = dados ? todasFotos(dados).filter((f) => novos.has(f.id)).length : 0;
+    const qtdVideos = dados ? dados.videos.filter((v) => novos.has(v.id)).length : 0;
+    const partes = [];
+    if (qtdNovas) partes.push(plural(qtdNovas, 'foto nova', 'fotos novas'));
+    if (qtdVideos) partes.push(plural(qtdVideos, 'vídeo novo', 'vídeos novos'));
     barra.classList.toggle('tem-mudancas', tem);
     $('[data-resumo]').textContent = !tem ? 'Tudo publicado'
-      : qtdNovas ? `${plural(qtdNovas, 'foto nova', 'fotos novas')} para publicar` : 'Alterações para publicar';
+      : partes.length ? partes.join(' e ') + ' para publicar' : 'Alterações para publicar';
     $('[data-publicar]').disabled = !tem || ocupado;
     $('[data-desfazer]').disabled = !tem || ocupado;
+    const alteradas = abasAlteradas();
+    $$('[data-aba]').forEach((b) => b.classList.toggle('alterada', alteradas.has(b.dataset.aba)));
+  };
+
+  /* ---------- Abas ---------- */
+
+  // as abas ficam grudadas logo abaixo da barra de cima (que muda de altura no celular)
+  const barraTopo = $('.barra');
+  const medirBarra = () => document.documentElement.style.setProperty('--barra', barraTopo.offsetHeight + 'px');
+  if (window.ResizeObserver) new ResizeObserver(medirBarra).observe(barraTopo);
+  else window.addEventListener('resize', medirBarra);
+  medirBarra();
+
+  const mostrarAba = (nome, rolar = true) => {
+    if (!ABAS.includes(nome)) nome = 'fotos';
+    $$('[data-aba]').forEach((b) => {
+      const sim = b.dataset.aba === nome;
+      b.setAttribute('aria-selected', String(sim));
+      b.tabIndex = sim ? 0 : -1;
+    });
+    $$('[data-painel-aba]').forEach((p) => {
+      p.hidden = p.dataset.painelAba !== nome;
+      if (!p.hidden) Editor.ajustar(p);
+    });
+    try { sessionStorage.setItem(CHAVE_ABA, nome); } catch (e) { /* tudo bem */ }
+    if (rolar) window.scrollTo(0, 0);
+  };
+  $$('[data-aba]').forEach((b, i, todas) => {
+    b.addEventListener('click', () => mostrarAba(b.dataset.aba));
+    b.addEventListener('keydown', (e) => {
+      const passo = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (!passo) return;
+      const alvo = todas[(i + passo + todas.length) % todas.length];
+      alvo.focus();
+      mostrarAba(alvo.dataset.aba);
+    });
+  });
+
+  const desenharEditor = () => {
+    Editor.desenhar({
+      textos: $('[data-editor-textos]'),
+      duvidas: $('[data-editor-duvidas]'),
+      contato: $('[data-editor-contato]'),
+    }, conteudo, atualizarBarra);
   };
 
   /* ---------- Ações nas fotos ---------- */
@@ -463,6 +593,10 @@
     if (previas.has(id) && novos.has(id)) {
       URL.revokeObjectURL(previas.get(id));
       previas.delete(id);
+    }
+    if (videosLocais.has(id)) {
+      URL.revokeObjectURL(videosLocais.get(id));
+      videosLocais.delete(id);
     }
     novos.delete(id);
   };
@@ -562,6 +696,214 @@
   $('[data-jf-pronto]', jf).addEventListener('click', () => jf.close());
   jf.addEventListener('close', () => { fotoAberta = ''; desenhar(); });
 
+  /* ---------- Vídeos ---------- */
+
+  // Lê o "moov" do MP4/MOV e diz o formato da imagem: H.264 toca em todo celular; HEVC, não.
+  const codecDoVideo = (bytes) => {
+    const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    const tipo = (i) => String.fromCharCode(bytes[i], bytes[i + 1], bytes[i + 2], bytes[i + 3]);
+    let i = 0;
+    while (i + 8 <= bytes.length) {
+      let tam = dv.getUint32(i);
+      if (tam === 1 && i + 16 <= bytes.length) tam = dv.getUint32(i + 8) * 0x100000000 + dv.getUint32(i + 12);
+      else if (tam === 0) tam = bytes.length - i;
+      if (tam < 8) return null;
+      if (tipo(i + 4) === 'moov') {
+        const moov = bytes.subarray(i, Math.min(bytes.length, i + tam));
+        const tem = (s) => {
+          const [a, b, c, d] = Array.from(s, (ch) => ch.charCodeAt(0));
+          for (let k = 0; k + 4 <= moov.length; k++) if (moov[k] === a && moov[k + 1] === b && moov[k + 2] === c && moov[k + 3] === d) return true;
+          return false;
+        };
+        if (['hvc1', 'hev1', 'dvh1', 'dvhe'].some(tem)) return 'hevc';
+        if (['avc1', 'avc3'].some(tem)) return 'h264';
+        return 'outro';
+      }
+      i += tam;
+    }
+    return null;
+  };
+
+  // Abre o vídeo no aparelho, confere se toca e tira uma capa (um quadro perto do 1º segundo)
+  const abrirVideoLocal = (arquivo) => new Promise((ok, falha) => {
+    const url = URL.createObjectURL(arquivo);
+    const v = el('video');
+    v.muted = true;
+    v.playsInline = true;
+    v.preload = 'auto';
+    let info = null;
+    let feito = false;
+    let relogioCapa = 0;
+    const fim = (erro, capa) => {
+      if (feito) return;
+      feito = true;
+      clearTimeout(relogio);
+      clearTimeout(relogioCapa);
+      v.removeAttribute('src');
+      v.load();
+      URL.revokeObjectURL(url);
+      if (erro) falha(erro);
+      else ok(Object.assign({ capa }, info));
+    };
+    const relogio = setTimeout(() => fim(new Error('não consegui abrir este vídeo neste aparelho. Envie em MP4.')), 25000);
+    v.addEventListener('error', () => fim(new Error('este aparelho não consegue tocar o vídeo. Envie em MP4.')));
+    v.addEventListener('loadedmetadata', () => {
+      if (!v.videoWidth || !v.videoHeight) return fim(new Error('o arquivo não tem imagem de vídeo.'));
+      info = { largura: v.videoWidth, altura: v.videoHeight, duracao: v.duration };
+      // sem capa, o vídeo funciona do mesmo jeito (só aparece escuro até tocar)
+      relogioCapa = setTimeout(() => fim(null, null), 10000);
+      v.currentTime = Math.min(1, (Number.isFinite(v.duration) ? v.duration : 3) / 3);
+    });
+    // desenha o quadro atual; devolve null se saiu preto (o Safari só entrega a imagem depois de tocar)
+    const quadro = () => {
+      try {
+        const w = Math.min(720, v.videoWidth);
+        const h = Math.round(v.videoHeight * w / v.videoWidth);
+        const c = el('canvas');
+        c.width = w;
+        c.height = h;
+        c.getContext('2d').drawImage(v, 0, 0, w, h);
+        const amostra = el('canvas');
+        amostra.width = amostra.height = 16;
+        const x = amostra.getContext('2d');
+        x.drawImage(c, 0, 0, 16, 16);
+        const px = x.getImageData(0, 0, 16, 16).data;
+        let soma = 0;
+        for (let k = 0; k < px.length; k += 4) soma += px[k] + px[k + 1] + px[k + 2];
+        return soma / (px.length / 4) / 3 < 6 ? null : c;
+      } catch (e) {
+        return null;
+      }
+    };
+    const entregar = (c) => (c ? c.toBlob((b) => fim(null, b), 'image/jpeg', 0.84) : fim(null, null));
+    v.addEventListener('seeked', () => {
+      const c = quadro();
+      if (c) return entregar(c);
+      // quadro preto: toca sem som por um instante e tenta de novo
+      const depois = v.currentTime;
+      const aoAndar = () => {
+        if (v.currentTime < depois + 0.25) return;
+        v.removeEventListener('timeupdate', aoAndar);
+        v.pause();
+        entregar(quadro());
+      };
+      v.addEventListener('timeupdate', aoAndar);
+      const tocando = v.play();
+      if (tocando && tocando.catch) tocando.catch(() => fim(null, null));
+    }, { once: true });
+    v.src = url;
+  });
+
+  const prepararVideo = async (arquivo) => {
+    if (!/^video\//.test(arquivo.type) && !/\.(mp4|m4v|mov)$/i.test(arquivo.name)) throw new Error('não é um vídeo.');
+    if (arquivo.size > VIDEO_MAX_MB * 1024 * 1024) {
+      throw new Error(`o vídeo tem ${Math.round(arquivo.size / 1024 / 1024)} MB e o máximo é ${VIDEO_MAX_MB} MB. Use um vídeo mais curto, ou salve o reel do Instagram (que já vem menor).`);
+    }
+    const codec = codecDoVideo(new Uint8Array(await arquivo.arrayBuffer()));
+    if (codec === 'hevc') {
+      throw new Error('foi gravado no formato HEVC, que não toca em todo celular. No iPhone, em Ajustes › Câmera › Formatos, escolha "Mais compatível" e grave de novo, ou envie o vídeo salvo do Instagram.');
+    }
+    if (codec !== 'h264') throw new Error('não reconheci o formato do vídeo. Envie um arquivo MP4.');
+    const info = await abrirVideoLocal(arquivo);
+    const id = novoId();
+    const base = `assets/video/video-${id}`;
+    const v = {
+      id: 'v' + id.replace(/-/g, ''),
+      video: base + '.mp4',
+      capa: info.capa ? base + '-capa.jpg' : '',
+      largura: info.largura,
+      altura: info.altura,
+      legenda: '',
+      descricao: '',
+    };
+    const arquivos = [{ caminho: v.video, blob: arquivo }];
+    if (info.capa) {
+      arquivos.push({ caminho: v.capa, blob: info.capa });
+      previas.set(v.id, URL.createObjectURL(info.capa));
+    }
+    novos.set(v.id, arquivos);
+    videosLocais.set(v.id, URL.createObjectURL(arquivo));
+    return { v, deitado: info.largura > info.altura };
+  };
+
+  const adicionarVideo = async (arquivo) => {
+    if (dados.videos.length >= LIMITES.videos) return;
+    ocupado = true;
+    andamento('Preparando o vídeo', 'Conferindo o formato…', null);
+    try {
+      const { v, deitado } = await prepararVideo(arquivo);
+      dados.videos.push(v);
+      ocupado = false;
+      desenhar();
+      if (deitado) {
+        andamento('Vídeo pronto', 'Este vídeo está deitado. No site, os vídeos aparecem em pé, então as laterais ficam cortadas.', null);
+        fimAndamento({});
+      } else {
+        jp.close();
+        abrirVideo(v.id);
+      }
+    } catch (erro) {
+      ocupado = false;
+      andamento('Não deu para usar este vídeo', '', null);
+      fimAndamento({ erro: `"${arquivo.name}": ${erro.message}` });
+    }
+  };
+
+  // Janela de um vídeo
+  const jv = $('[data-janela-video]');
+  let videoAberto = '';
+  const posVideo = () => dados.videos.findIndex((v) => v.id === videoAberto);
+  const abrirVideo = (id) => {
+    videoAberto = id;
+    const i = posVideo();
+    if (i < 0) return;
+    const v = dados.videos[i];
+    const previa = $('[data-jv-previa]', jv);
+    previa.poster = capaVideo(v);
+    previa.src = videosLocais.get(v.id) || new URL(v.video, SITE).href;
+    $('[data-jv-legenda]', jv).value = v.legenda || '';
+    preencherJanelaVideo();
+    jv.showModal();
+  };
+  const preencherJanelaVideo = () => {
+    const i = posVideo();
+    if (i < 0) { jv.close(); return; }
+    $('[data-jv-titulo]', jv).textContent = `Vídeo ${i + 1} de ${dados.videos.length}`;
+    $('[data-jv-esquerda]', jv).disabled = i === 0;
+    $('[data-jv-direita]', jv).disabled = i === dados.videos.length - 1;
+  };
+  $('[data-jv-legenda]', jv).addEventListener('input', (ev) => {
+    const i = posVideo();
+    if (i >= 0) { dados.videos[i].legenda = ev.target.value.trim(); atualizarBarra(); }
+  });
+  const moverVideo = (passo) => {
+    const i = posVideo();
+    const j = i + passo;
+    if (i < 0 || j < 0 || j >= dados.videos.length) return;
+    [dados.videos[i], dados.videos[j]] = [dados.videos[j], dados.videos[i]];
+    desenhar();
+    preencherJanelaVideo();
+  };
+  $('[data-jv-esquerda]', jv).addEventListener('click', () => moverVideo(-1));
+  $('[data-jv-direita]', jv).addEventListener('click', () => moverVideo(1));
+  $('[data-jv-remover]', jv).addEventListener('click', () => {
+    const i = posVideo();
+    if (i < 0 || !window.confirm('Remover este vídeo do site?')) return;
+    const [v] = dados.videos.splice(i, 1);
+    jv.close();
+    descartarNovo(v.id);
+    desenhar();
+  });
+  $('[data-jv-pronto]', jv).addEventListener('click', () => jv.close());
+  jv.addEventListener('close', () => {
+    const previa = $('[data-jv-previa]', jv);
+    previa.pause();
+    previa.removeAttribute('src');
+    previa.load();
+    videoAberto = '';
+    desenhar();
+  });
+
   // Galerias
   const moverGaleria = (i, passo) => {
     const j = i + passo;
@@ -592,27 +934,33 @@
 
   $('[data-desfazer]').addEventListener('click', () => {
     if (!window.confirm('Desfazer tudo o que ainda não foi publicado?')) return;
-    todasFotos(dados).forEach((f) => { if (novos.has(f.id)) descartarNovo(f.id); });
+    [...todasFotos(dados), ...dados.videos].forEach((f) => { if (novos.has(f.id)) descartarNovo(f.id); });
     novos.clear();
     dados = normalizar(JSON.parse(original));
+    conteudo = Editor.normalizar(JSON.parse(originalConteudo));
+    desenharEditor();
     desenhar();
   });
 
   /* ---------- Publicar ---------- */
 
-  const mensagemCommit = (qtdNovas, qtdRemovidas) => {
+  const mensagemCommit = ({ fotosNovas, fotosRemovidas, videosNovos, videosRemovidos, fotosMudaram, textos }) => {
     const partes = [];
-    if (qtdNovas) partes.push(plural(qtdNovas, 'foto nova', 'fotos novas'));
-    if (qtdRemovidas) partes.push(plural(qtdRemovidas, 'foto removida', 'fotos removidas'));
-    return 'Painel de fotos: ' + (partes.length ? partes.join(', ') : 'fotos e textos reorganizados');
+    if (fotosNovas) partes.push(plural(fotosNovas, 'foto nova', 'fotos novas'));
+    if (fotosRemovidas) partes.push(plural(fotosRemovidas, 'foto removida', 'fotos removidas'));
+    if (videosNovos) partes.push(plural(videosNovos, 'vídeo novo', 'vídeos novos'));
+    if (videosRemovidos) partes.push(plural(videosRemovidos, 'vídeo removido', 'vídeos removidos'));
+    if (!partes.length && fotosMudaram) partes.push('fotos reorganizadas');
+    if (textos) partes.push('textos e contato');
+    return 'Painel do site: ' + partes.join(', ');
   };
 
-  const acompanhar = async (marca) => {
+  const acompanhar = async (marca, caminho) => {
     const inicio = Date.now();
     while (Date.now() - inicio < 12 * 60 * 1000) {
       await espera(15000);
       try {
-        const r = await fetch(new URL(CAMINHO_FOTOS + '?v=' + Date.now(), SITE), { cache: 'no-store' });
+        const r = await fetch(new URL(caminho + '?v=' + Date.now(), SITE), { cache: 'no-store' });
         if (r.ok && (await r.json()).atualizado === marca) return true;
       } catch (e) { /* tenta de novo */ }
       if (!jp.open) return false;
@@ -622,36 +970,68 @@
 
   $('[data-publicar]').addEventListener('click', async () => {
     if (ocupado || !mudou()) return;
+    const erros = Editor.problemas(conteudo);
+    if (erros.length) {
+      mostrarAba(erros[0].aba);
+      andamento('Falta corrigir uma coisa', 'Nada foi publicado ainda.', null);
+      fimAndamento({ erro: erros.map((x) => x.msg).join(' ') });
+      return;
+    }
     ocupado = true;
     atualizarBarra();
     andamento('Publicando no site', 'Conferindo a versão atual…', 3);
     try {
-      const atual = await gh(`/contents/${CAMINHO_FOTOS}?ref=${encodeURIComponent(RAMO)}`);
-      if (atual.sha !== shaFotos) {
-        throw new Error('As fotos foram alteradas em outro aparelho depois que você entrou. Toque em Desfazer e recarregue a página para ver a versão mais nova.');
+      const comFotos = mudouFotos();
+      const comConteudo = mudouConteudo();
+      const ler = (caminho) => gh(`/contents/${caminho}?ref=${encodeURIComponent(RAMO)}`);
+      const [atualF, atualC] = await Promise.all([comFotos ? ler(CAMINHO_FOTOS) : null, comConteudo ? ler(CAMINHO_CONTEUDO) : null]);
+      if ((atualF && atualF.sha !== shaFotos) || (atualC && atualC.sha !== shaConteudo)) {
+        throw new Error('O site foi alterado em outro aparelho depois que você entrou. Anote o que você mudou, toque em Desfazer, recarregue a página e faça de novo.');
       }
-      const fotosAgora = todasFotos(dados);
-      const usadosAgora = new Set(fotosAgora.flatMap(arquivosDe));
-      const fotosAntes = todasFotos(normalizar(JSON.parse(original)));
-      const removidos = [...new Set(fotosAntes.flatMap(arquivosDe))].filter((c) => c.startsWith('assets/fotos/') && !usadosAgora.has(c));
-      const fotosNovas = fotosAgora.filter((f) => novos.has(f.id));
-      const envios = fotosNovas.flatMap((f) => novos.get(f.id));
+
+      let removidos = [];
+      let fotosNovas = [];
+      let videosNovos = [];
+      if (comFotos) {
+        const antes = normalizar(JSON.parse(original));
+        const usadosAgora = new Set([...todasFotos(dados).flatMap(arquivosDe), ...dados.videos.flatMap(arquivosVideo)]);
+        removidos = [...new Set([...todasFotos(antes).flatMap(arquivosDe), ...antes.videos.flatMap(arquivosVideo)])]
+          .filter((c) => (c.startsWith('assets/fotos/') || c.startsWith('assets/video/')) && !usadosAgora.has(c));
+        fotosNovas = todasFotos(dados).filter((f) => novos.has(f.id));
+        videosNovos = dados.videos.filter((v) => novos.has(v.id));
+      }
+      const envios = [...fotosNovas, ...videosNovos].flatMap((x) => novos.get(x.id));
       const itens = [];
 
       for (let i = 0; i < envios.length; i++) {
-        andamento('Publicando no site', `Enviando as fotos (${i + 1} de ${envios.length})…`, 5 + Math.round((i / Math.max(1, envios.length)) * 75));
+        const texto = /\.mp4$/.test(envios[i].caminho)
+          ? 'Enviando o vídeo… pode levar alguns minutos na internet do celular.'
+          : `Enviando as fotos (${i + 1} de ${envios.length})…`;
+        andamento('Publicando no site', texto, 5 + Math.round((i / Math.max(1, envios.length)) * 75));
         const blob = await gh('/git/blobs', { metodo: 'POST', corpo: { content: await blobParaB64(envios[i].blob), encoding: 'base64' } });
         itens.push({ path: envios[i].caminho, mode: '100644', type: 'blob', sha: blob.sha });
       }
 
       andamento('Publicando no site', 'Salvando as alterações…', 85);
       const marca = new Date().toISOString();
-      const copia = JSON.parse(JSON.stringify(dados));
-      copia.atualizado = marca;
-      const conteudo = JSON.stringify(copia, null, 2) + '\n';
-      const blobDados = await gh('/git/blobs', { metodo: 'POST', corpo: { content: textoParaB64(conteudo), encoding: 'base64' } });
-      itens.push({ path: CAMINHO_FOTOS, mode: '100644', type: 'blob', sha: blobDados.sha });
+      const salvarJson = async (obj, caminho) => {
+        const copia = JSON.parse(JSON.stringify(obj));
+        copia.atualizado = marca;
+        const b = await gh('/git/blobs', { metodo: 'POST', corpo: { content: textoParaB64(JSON.stringify(copia, null, 2) + '\n'), encoding: 'base64' } });
+        itens.push({ path: caminho, mode: '100644', type: 'blob', sha: b.sha });
+        return b.sha;
+      };
+      const novoShaFotos = comFotos ? await salvarJson(dados, CAMINHO_FOTOS) : shaFotos;
+      const novoShaConteudo = comConteudo ? await salvarJson(conteudo, CAMINHO_CONTEUDO) : shaConteudo;
       removidos.forEach((c) => itens.push({ path: c, mode: '100644', type: 'blob', sha: null }));
+      const mensagem = mensagemCommit({
+        fotosNovas: fotosNovas.length,
+        fotosRemovidas: new Set(removidos.filter((c) => c.startsWith('assets/fotos/')).map((c) => c.replace(/-\d+\.\w+$/, ''))).size,
+        videosNovos: videosNovos.length,
+        videosRemovidos: removidos.filter((c) => /\.mp4$/.test(c)).length,
+        fotosMudaram: comFotos,
+        textos: comConteudo,
+      });
 
       for (let tentativa = 1; ; tentativa++) {
         const ref = await gh(`/git/ref/heads/${encodeURIComponent(RAMO)}`);
@@ -659,7 +1039,7 @@
         const arvore = await gh('/git/trees', { metodo: 'POST', corpo: { base_tree: ultimo.tree.sha, tree: itens } });
         const commit = await gh('/git/commits', {
           metodo: 'POST',
-          corpo: { message: mensagemCommit(fotosNovas.length, new Set(removidos.map((c) => c.replace(/-\d+\.\w+$/, ''))).size), tree: arvore.sha, parents: [ref.object.sha] },
+          corpo: { message: mensagem, tree: arvore.sha, parents: [ref.object.sha] },
         });
         try {
           await gh(`/git/refs/heads/${encodeURIComponent(RAMO)}`, { metodo: 'PATCH', corpo: { sha: commit.sha, force: false } });
@@ -670,15 +1050,22 @@
         }
       }
 
-      dados.atualizado = marca;
-      original = JSON.stringify(dados);
-      shaFotos = blobDados.sha;
+      if (comFotos) {
+        dados.atualizado = marca;
+        original = JSON.stringify(dados);
+        shaFotos = novoShaFotos;
+      }
+      if (comConteudo) {
+        conteudo.atualizado = marca;
+        originalConteudo = JSON.stringify(conteudo);
+        shaConteudo = novoShaConteudo;
+      }
       novos.clear();
       ocupado = false;
       desenhar();
       andamento('Salvo!', 'As alterações foram salvas. O site está sendo atualizado; isso costuma levar de 1 a 5 minutos. Pode fechar esta janela.', null);
       fimAndamento({ site: true });
-      const noAr = await acompanhar(marca);
+      const noAr = await acompanhar(marca, comConteudo ? CAMINHO_CONTEUDO : CAMINHO_FOTOS);
       if (jp.open && noAr) andamento('Pronto, já está no site!', 'Se ainda aparecer a versão antiga, puxe a página para baixo para atualizar.', null);
     } catch (e) {
       ocupado = false;
@@ -697,6 +1084,10 @@
   const abrirPainel = async () => {
     await carregarDados();
     mostrarTela('painel');
+    let aba = 'fotos';
+    try { aba = sessionStorage.getItem(CHAVE_ABA) || 'fotos'; } catch (e) { /* tudo bem */ }
+    mostrarAba(aba, false);
+    desenharEditor();
     desenhar();
   };
 
@@ -739,7 +1130,7 @@
     await gh(`/contents/${CAMINHO_ACESSO}`, {
       metodo: 'PUT',
       chave,
-      corpo: { message: 'Painel de fotos: ' + (sha ? 'troca a senha' : 'configura o acesso'), content: textoParaB64(JSON.stringify(acesso, null, 2) + '\n'), branch: RAMO, sha },
+      corpo: { message: 'Painel do site: ' + (sha ? 'troca a senha' : 'configura o acesso'), content: textoParaB64(JSON.stringify(acesso, null, 2) + '\n'), branch: RAMO, sha },
     });
   };
 
@@ -803,6 +1194,8 @@
     token = '';
     dados = null;
     original = '';
+    conteudo = null;
+    originalConteudo = '';
     novos.clear();
     window.location.reload();
   });

@@ -1,9 +1,10 @@
 /* Raquel Melo Conceito de Beleza: interações do site.
-   Os dados do salão vêm de assets/js/config.js; o que estiver vazio fica escondido. */
+   Textos, contato e horários vêm de assets/data/conteudo.json; fotos e vídeos, de
+   assets/data/fotos.json. Os dois são editados pelo painel da Raquel (/admin/).
+   O que estiver vazio fica escondido. */
 (() => {
   'use strict';
 
-  const cfg = window.SITE_CONFIG || {};
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
   const html = document.documentElement;
@@ -34,35 +35,129 @@
   const suave = () => (reduceMotion.matches ? 'auto' : 'smooth');
   const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
 
-  /* ---------- Dados do salão ---------- */
+  /* ---------- Textos do painel ---------- */
 
   const texto = (v) => String(v || '').trim();
   const lista = (v) => (Array.isArray(v) ? v.map(texto).filter(Boolean) : []);
+  const pegar = (obj, caminho) => caminho.split('.').reduce((o, k) => (o && typeof o === 'object' ? o[k] : undefined), obj);
+  const linhasDe = (t) => String(t || '').replace(/\r/g, '').split('\n').map((l) => l.trim()).filter(Boolean);
+  // **palavra** vira negrito; o resto entra como texto puro
+  const rico = (alvo, t) => {
+    alvo.textContent = '';
+    String(t || '').trim().split(/\*\*(.+?)\*\*/g).forEach((parte, i) => {
+      if (parte) alvo.append(i % 2 ? el('strong', {}, parte) : document.createTextNode(parte));
+    });
+  };
+  // cada linha vira um parágrafo; linhas que começam com "-" viram itens de lista
+  const blocos = (alvo, t) => {
+    let ul = null;
+    linhasDe(t).forEach((l) => {
+      const item = l.match(/^[-•]\s*(.+)$/);
+      if (item) {
+        if (!ul) alvo.append(ul = el('ul'));
+        const li = el('li');
+        rico(li, item[1]);
+        ul.append(li);
+        return;
+      }
+      ul = null;
+      const p = el('p');
+      rico(p, l);
+      alvo.append(p);
+    });
+  };
+
+  let avisoAgendamento = 'Atendimento somente com horário agendado';
+
+  // Sem o campo no arquivo, fica o texto que já está no HTML
+  const aplicarTextos = (c) => {
+    $$('[data-c]').forEach((n) => {
+      const v = pegar(c, n.dataset.c);
+      if (typeof v !== 'string') return;
+      if (n.hasAttribute('data-c-rico')) rico(n, v);
+      else n.textContent = v.trim();
+      n.hidden = !v.trim();
+    });
+
+    const grupos = new Map();
+    $$('[data-c-par]').forEach((p) => {
+      if (!grupos.has(p.dataset.cPar)) grupos.set(p.dataset.cPar, []);
+      grupos.get(p.dataset.cPar).push(p);
+    });
+    grupos.forEach((ps, chave) => {
+      const v = pegar(c, chave);
+      if (typeof v !== 'string') return;
+      const pai = ps[0].parentNode;
+      const depois = ps[ps.length - 1].nextSibling;
+      ps.forEach((p) => p.remove());
+      linhasDe(v).forEach((l) => {
+        const p = el('p', { 'data-c-par': chave });
+        rico(p, l);
+        pai.insertBefore(p, depois);
+      });
+    });
+
+    $$('[data-c-lista]').forEach((trilho) => {
+      const itens = pegar(c, trilho.dataset.cLista);
+      if (!Array.isArray(itens)) return;
+      trilho.textContent = '';
+      lista(itens).forEach((t) => trilho.append(el('span', {}, t)));
+      trilho.parentElement.hidden = !trilho.children.length;
+    });
+    const faixa = $('[data-c-fitas]');
+    if (faixa) faixa.hidden = pegar(c, 'fitas.mostrar') === false || $$('.fita', faixa).every((f) => f.hidden);
+
+    const produtos = $('[data-c-produtos]');
+    const itens = pegar(c, 'produtos.itens');
+    if (produtos && Array.isArray(itens)) {
+      produtos.textContent = '';
+      itens.filter((i) => i && texto(i.nome)).forEach((i) => {
+        const li = el('li');
+        li.append(el('strong', {}, texto(i.nome)));
+        if (texto(i.detalhe)) li.append(el('span', {}, texto(i.detalhe)));
+        produtos.append(li);
+      });
+      produtos.hidden = !produtos.children.length;
+    }
+
+    const aviso = pegar(c, 'horarios.aviso');
+    if (typeof aviso === 'string') {
+      avisoAgendamento = aviso.trim();
+      $$('[data-c-aviso]').forEach((n) => {
+        n.textContent = n.dataset.cAviso === 'menu' ? '✦ ' + avisoAgendamento : '✦ ' + avisoAgendamento + ' ✦';
+        n.hidden = !avisoAgendamento;
+      });
+    }
+
+    $$('[data-c-secao]').forEach((sec) => { if (pegar(c, sec.dataset.cSecao + '.mostrar') === false) sec.hidden = true; });
+  };
+
+  /* ---------- Dados do salão ---------- */
+
   const usuario = (v, dominio) => texto(v)
     .replace(new RegExp('^https?://(www\\.)?' + dominio + '/', 'i'), '')
     .replace(/^@/, '')
     .replace(/[/?#].*$/, '');
+  // links digitados no painel: só endereços https
+  const linkSeguro = (v) => (/^https:\/\/[^\s"<>]+$/i.test(texto(v)) ? texto(v) : '');
 
-  const waDigits = texto(cfg.whatsapp).replace(/\D/g, '');
-  const igUser = usuario(cfg.instagram, 'instagram\\.com');
-  const tiktokUser = usuario(cfg.tiktok, 'tiktok\\.com').replace(/^@/, '');
-  const address = texto(cfg.endereco);
-  const cidade = texto(cfg.cidade);
-  const hours = lista(cfg.horarios);
-  const pagamento = lista(cfg.pagamento);
-  const googleUrl = texto(cfg.google);
-  const notaGoogle = texto(cfg.notaGoogle);
-  const youtubeUrl = texto(cfg.youtube);
-
-  const igUrl = igUser ? 'https://www.instagram.com/' + igUser + '/' : '';
-  const tiktokUrl = tiktokUser ? 'https://www.tiktok.com/@' + tiktokUser : '';
-  const mapsUrl = texto(cfg.mapsUrl) ||
-    (address ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(address) : '');
-  const wazeUrl = address ? 'https://waze.com/ul?navigate=yes&q=' + encodeURIComponent(address) : '';
-  const uberUrl = address
-    ? 'https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff%5Bformatted_address%5D=' + encodeURIComponent(address)
-    : '';
-  const waUrl = (msg) => 'https://wa.me/' + waDigits + '?text=' + encodeURIComponent(msg || cfg.mensagemPadrao || '');
+  let mensagemPadrao = '';
+  let waDigits = '';
+  let igUser = '';
+  let tiktokUser = '';
+  let address = '';
+  let cidade = '';
+  let hours = [];
+  let pagamento = [];
+  let googleUrl = '';
+  let notaGoogle = '';
+  let youtubeUrl = '';
+  let igUrl = '';
+  let tiktokUrl = '';
+  let mapsUrl = '';
+  let wazeUrl = '';
+  let uberUrl = '';
+  const waUrl = (msg) => 'https://wa.me/' + waDigits + '?text=' + encodeURIComponent(msg || mensagemPadrao || '');
 
   const telefone = (digits) => {
     const n = digits.startsWith('55') && digits.length >= 12 ? digits.slice(2) : digits;
@@ -81,29 +176,13 @@
       a.rel = 'noopener';
     });
   };
-  aplicarWhats(document);
 
-  $$('[data-instagram-link]').forEach((a) => {
-    if (!igUrl) return;
-    a.href = igUrl;
-    a.hidden = false;
-  });
-
-  if (cidade) $$('[data-cidade-sufixo]').forEach((n) => { n.textContent = ' · ' + cidade; });
-
-  // Nota do Google sobre a foto do topo
-  const nota = $('[data-nota-google]');
-  if (nota && notaGoogle) {
-    $('[data-nota-valor]', nota).textContent = notaGoogle;
-    if (googleUrl) nota.href = googleUrl;
-    else nota.removeAttribute('href');
-    nota.setAttribute('aria-label', 'Nota ' + notaGoogle + ' no Google');
-    nota.hidden = false;
-  }
-
-  // Horários: tabela com o dia de hoje em destaque
+  // Horários: aceita { dia, horario } (painel) ou "Dia: horário"
+  const linhaHorario = (h) => (h && typeof h === 'object'
+    ? [texto(h.dia), texto(h.horario)].filter(Boolean).join(': ')
+    : texto(h));
   const DIAS = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
-  const semAcento = (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const semAcento = (t) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
   const diasDoTexto = (t0) => {
     const t = semAcento(t0);
     const achados = DIAS.map((d, i) => ({ i, pos: t.indexOf(d) })).filter((x) => x.pos >= 0).sort((a, b) => a.pos - b.pos);
@@ -117,84 +196,215 @@
     }
     return achados.map((x) => x.i);
   };
-  const tabela = $('[data-horarios]');
-  if (tabela && hours.length) {
-    const hoje = new Date().getDay();
-    const corpo = $('tbody', tabela);
-    hours.forEach((linha) => {
-      const i = linha.indexOf(':');
-      const dia = i > 0 ? linha.slice(0, i).trim() : linha.trim();
-      const hora = i > 0 ? linha.slice(i + 1).trim() : '';
-      const tr = el('tr');
-      const td = el('td', {}, hora.charAt(0).toUpperCase() + hora.slice(1));
-      if (/fechad/i.test(hora)) td.className = 'fechado';
-      tr.append(el('th', { scope: 'row' }, dia), td);
-      if (diasDoTexto(dia).includes(hoje)) {
-        tr.classList.add('is-hoje');
-        tr.setAttribute('aria-current', 'date');
-      }
-      corpo.append(tr);
+
+  const aplicarContato = (cfg) => {
+    mensagemPadrao = texto(cfg.mensagemPadrao);
+    waDigits = texto(cfg.whatsapp).replace(/\D/g, '');
+    igUser = usuario(cfg.instagram, 'instagram\\.com');
+    tiktokUser = usuario(cfg.tiktok, 'tiktok\\.com').replace(/^@/, '');
+    address = texto(cfg.endereco);
+    cidade = texto(cfg.cidade);
+    hours = (Array.isArray(cfg.horarios) ? cfg.horarios : []).map(linhaHorario).filter(Boolean);
+    pagamento = lista(cfg.pagamento);
+    googleUrl = linkSeguro(cfg.google);
+    notaGoogle = texto(cfg.notaGoogle);
+    youtubeUrl = linkSeguro(cfg.youtube);
+    igUrl = igUser ? 'https://www.instagram.com/' + encodeURIComponent(igUser) + '/' : '';
+    tiktokUrl = tiktokUser ? 'https://www.tiktok.com/@' + encodeURIComponent(tiktokUser) : '';
+    mapsUrl = linkSeguro(cfg.mapsUrl) ||
+      (address ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(address) : '');
+    wazeUrl = address ? 'https://waze.com/ul?navigate=yes&q=' + encodeURIComponent(address) : '';
+    uberUrl = address
+      ? 'https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff%5Bformatted_address%5D=' + encodeURIComponent(address)
+      : '';
+
+    aplicarWhats(document);
+
+    $$('[data-instagram-link]').forEach((a) => {
+      if (!igUrl) return;
+      a.href = igUrl;
+      a.hidden = false;
     });
-    tabela.hidden = false;
-    $('[data-horarios-vazio]').hidden = true;
-  }
 
-  if (address) {
-    $('[data-endereco-texto]').textContent = address;
-    $('[data-endereco-bloco]').hidden = false;
-  }
-  if (pagamento.length) {
-    $('[data-pagamento-texto]').textContent = listaPt(pagamento) + '.';
-    $('[data-pagamento-bloco]').hidden = false;
-  }
+    if (cidade) $$('[data-cidade-sufixo]').forEach((n) => { n.textContent = ' · ' + cidade; });
 
-  // Mapa: o Google Maps entra quando há endereço (carrega só perto da tela)
-  const mapa = $('[data-mapa]');
-  if (mapa && address) {
-    const capa = $('[data-mapa-capa]', mapa);
-    $('[data-mapa-texto]', mapa).textContent = address;
-    const quadro = el('iframe', {
-      src: 'https://www.google.com/maps?q=' + encodeURIComponent(address) + '&output=embed',
-      title: 'Mapa com o endereço do salão',
-      loading: 'lazy',
-      referrerpolicy: 'no-referrer-when-downgrade',
-      allowfullscreen: '',
-    });
-    quadro.addEventListener('load', () => { capa.hidden = true; });
-    mapa.prepend(quadro);
-  }
-
-  // Atalhos de contato e rotas (como os botões da referência)
-  const atalhos = $('[data-atalhos]');
-  if (atalhos) {
-    const atalho = (href, iconeId, titulo, sub, escuro) => {
-      const a = el('a', { class: 'atalho' + (escuro ? ' atalho-escuro' : ''), href, target: '_blank', rel: 'noopener' });
-      const bola = el('span', { class: 'atalho-icone' });
-      bola.append(icone(iconeId));
-      const t = el('span', { class: 'atalho-texto' });
-      t.append(el('strong', {}, titulo), el('small', {}, sub));
-      a.append(bola, t);
-      atalhos.append(a);
-    };
-    if (waDigits) {
-      atalho(waUrl(), 'icon-agenda', 'Agendar agora', 'Escolha seu horário', true);
-      atalho(waUrl(), 'icon-whatsapp', 'WhatsApp', telefone(waDigits));
+    // Nota do Google sobre a foto do topo
+    const nota = $('[data-nota-google]');
+    if (nota && notaGoogle) {
+      $('[data-nota-valor]', nota).textContent = notaGoogle;
+      if (googleUrl) nota.href = googleUrl;
+      else nota.removeAttribute('href');
+      nota.setAttribute('aria-label', 'Nota ' + notaGoogle + ' no Google');
+      nota.hidden = false;
     }
-    if (googleUrl) atalho(googleUrl, 'icon-estrela', 'Me avalie', 'Avalie no Google');
-    if (igUrl) atalho(igUrl, 'icon-instagram', 'Instagram', '@' + igUser);
+
+    // Horários: tabela com o dia de hoje em destaque
+    const tabela = $('[data-horarios]');
+    if (tabela && hours.length) {
+      const hoje = new Date().getDay();
+      const corpo = $('tbody', tabela);
+      hours.forEach((linha) => {
+        const i = linha.indexOf(':');
+        const dia = i > 0 ? linha.slice(0, i).trim() : linha.trim();
+        const hora = i > 0 ? linha.slice(i + 1).trim() : '';
+        const tr = el('tr');
+        const td = el('td', {}, hora.charAt(0).toUpperCase() + hora.slice(1));
+        if (/fechad/i.test(hora)) td.className = 'fechado';
+        tr.append(el('th', { scope: 'row' }, dia), td);
+        if (diasDoTexto(dia).includes(hoje)) {
+          tr.classList.add('is-hoje');
+          tr.setAttribute('aria-current', 'date');
+        }
+        corpo.append(tr);
+      });
+      tabela.hidden = false;
+      $('[data-horarios-vazio]').hidden = true;
+    }
+
     if (address) {
-      atalho(mapsUrl, 'icon-pin', 'Google Maps', 'Ver rota');
-      atalho(wazeUrl, 'icon-rota', 'Waze', 'Navegar até nós');
-      atalho(uberUrl, 'icon-carro', 'Uber', 'Ir de carro');
+      $('[data-endereco-texto]').textContent = address;
+      $('[data-endereco-bloco]').hidden = false;
     }
-    if (youtubeUrl) atalho(youtubeUrl, 'icon-youtube', 'YouTube', 'Nosso canal');
-    if (tiktokUrl) atalho(tiktokUrl, 'icon-tiktok', 'TikTok', '@' + tiktokUser);
-    atalhos.hidden = !atalhos.children.length;
-  }
+    if (pagamento.length) {
+      $('[data-pagamento-texto]').textContent = listaPt(pagamento) + '.';
+      $('[data-pagamento-bloco]').hidden = false;
+    }
 
-  // Perguntas que dependem dos dados entram na mesma ordem da referência
-  const faq = $('[data-faq]');
-  if (faq) {
+    // Mapa: o Google Maps entra quando há endereço (carrega só perto da tela)
+    const mapa = $('[data-mapa]');
+    if (mapa && address) {
+      const capa = $('[data-mapa-capa]', mapa);
+      $('[data-mapa-texto]', mapa).textContent = address;
+      const quadro = el('iframe', {
+        src: 'https://www.google.com/maps?q=' + encodeURIComponent(address) + '&output=embed',
+        title: 'Mapa com o endereço do salão',
+        loading: 'lazy',
+        referrerpolicy: 'no-referrer-when-downgrade',
+        allowfullscreen: '',
+      });
+      quadro.addEventListener('load', () => { capa.hidden = true; });
+      mapa.prepend(quadro);
+    }
+
+    // Atalhos de contato e rotas (como os botões da referência)
+    const atalhos = $('[data-atalhos]');
+    if (atalhos) {
+      const atalho = (href, iconeId, titulo, sub, escuro) => {
+        const a = el('a', { class: 'atalho' + (escuro ? ' atalho-escuro' : ''), href, target: '_blank', rel: 'noopener' });
+        const bola = el('span', { class: 'atalho-icone' });
+        bola.append(icone(iconeId));
+        const t = el('span', { class: 'atalho-texto' });
+        t.append(el('strong', {}, titulo), el('small', {}, sub));
+        a.append(bola, t);
+        atalhos.append(a);
+      };
+      if (waDigits) {
+        atalho(waUrl(), 'icon-agenda', 'Agendar agora', 'Escolha seu horário', true);
+        atalho(waUrl(), 'icon-whatsapp', 'WhatsApp', telefone(waDigits));
+      }
+      if (googleUrl) atalho(googleUrl, 'icon-estrela', 'Me avalie', 'Avalie no Google');
+      if (igUrl) atalho(igUrl, 'icon-instagram', 'Instagram', '@' + igUser);
+      if (address) {
+        atalho(mapsUrl, 'icon-pin', 'Google Maps', 'Ver rota');
+        atalho(wazeUrl, 'icon-rota', 'Waze', 'Navegar até nós');
+        atalho(uberUrl, 'icon-carro', 'Uber', 'Ir de carro');
+      }
+      if (youtubeUrl) atalho(youtubeUrl, 'icon-youtube', 'YouTube', 'Nosso canal');
+      if (tiktokUrl) atalho(tiktokUrl, 'icon-tiktok', 'TikTok', '@' + tiktokUser);
+      atalhos.hidden = !atalhos.children.length;
+    }
+
+    // Rodapé: onde estamos e botões
+    const onde = $('[data-rodape-onde]');
+    if (onde && (address || waDigits)) {
+      if (address) {
+        // quebra a linha antes da cidade: rua e bairro em cima, cidade e CEP embaixo
+        const p = $('[data-rodape-endereco]', onde);
+        const nomeCidade = cidade.split(/\s*[·,]\s*/)[0];
+        const corte = nomeCidade ? address.indexOf(nomeCidade) : -1;
+        const linhas = el('span', { class: 'rodape-onde-texto' });
+        if (corte > 0) linhas.append(el('span', {}, address.slice(0, corte).replace(/[\s,-]+$/, '')), el('span', {}, address.slice(corte)));
+        else linhas.append(el('span', {}, address));
+        p.append(icone('icon-pin'), linhas);
+        p.hidden = false;
+      }
+      if (waDigits) {
+        const t = $('[data-rodape-telefone]', onde);
+        t.href = waUrl();
+        t.target = '_blank';
+        t.rel = 'noopener';
+        t.setAttribute('aria-label', 'WhatsApp ' + telefone(waDigits));
+        t.append(icone('icon-whatsapp'), el('span', {}, telefone(waDigits)));
+        t.hidden = false;
+      }
+      onde.hidden = false;
+    }
+    const pilulas = $('[data-rodape-botoes]');
+    if (pilulas) {
+      const pilula = (href, iconeId, rotulo, escura) => {
+        const a = el('a', { class: 'pilula' + (escura ? ' pilula-escura' : ''), href, target: '_blank', rel: 'noopener' });
+        a.append(icone(iconeId), document.createTextNode(rotulo));
+        pilulas.append(a);
+      };
+      if (waDigits) {
+        pilula(waUrl(), 'icon-agenda', 'Agendar agora', true);
+        pilula(waUrl(), 'icon-whatsapp', 'WhatsApp');
+      }
+      if (igUrl) pilula(igUrl, 'icon-instagram', 'Instagram');
+      if (googleUrl) pilula(googleUrl, 'icon-estrela', 'Me avalie');
+      if (address) {
+        pilula(mapsUrl, 'icon-pin', 'Google Maps');
+        pilula(wazeUrl, 'icon-rota', 'Waze');
+      }
+      if (youtubeUrl) pilula(youtubeUrl, 'icon-youtube', 'YouTube');
+      if (tiktokUrl) pilula(tiktokUrl, 'icon-tiktok', 'TikTok');
+      pilulas.hidden = !pilulas.children.length;
+    }
+
+    /* ---------- Dados estruturados (Google) ---------- */
+
+    const abs = (path) => new URL(path, document.baseURI).href;
+    const ld = {
+      '@context': 'https://schema.org',
+      '@type': 'HairSalon',
+      name: 'Raquel Melo Conceito de Beleza',
+      description: 'Colorista de todas as cores: coloração, mechas, loiros, morena iluminada, cores fantasia e tratamentos capilares sob medida.',
+      url: abs('./'),
+      image: abs('assets/img/raquel-melo-retrato-1000.jpg'),
+      logo: abs('apple-touch-icon.png'),
+    };
+    if (waDigits) ld.telephone = '+' + waDigits;
+    if (address) {
+      ld.address = { '@type': 'PostalAddress', streetAddress: address, addressCountry: 'BR' };
+      const [localidade, estado] = cidade.split(/\s*[·,-]\s*/);
+      if (localidade) ld.address.addressLocality = localidade;
+      if (estado) ld.address.addressRegion = estado;
+      const cep = address.match(/\b\d{5}-?\d{3}\b/);
+      if (cep) ld.address.postalCode = cep[0];
+    }
+    // Horários no formato do Google ("Terça-feira: 09:00 – 18:00")
+    const NOMES_DIAS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const hora = (h, m) => String(h).padStart(2, '0') + ':' + String(m || 0).padStart(2, '0');
+    const horarioLd = hours.map((linha) => {
+      const i = linha.indexOf(':');
+      if (i <= 0) return null;
+      const faixa = linha.slice(i + 1).match(/(\d{1,2})\s*[:h]?\s*(\d{2})?\s*(?:–|-|às|a)\s*(\d{1,2})\s*[:h]?\s*(\d{2})?/i);
+      const dias = diasDoTexto(linha.slice(0, i));
+      if (!faixa || !dias.length) return null;
+      return { '@type': 'OpeningHoursSpecification', dayOfWeek: dias.map((d) => NOMES_DIAS[d]), opens: hora(faixa[1], faixa[2]), closes: hora(faixa[3], faixa[4]) };
+    }).filter(Boolean);
+    if (horarioLd.length) ld.openingHoursSpecification = horarioLd;
+    const perfis = [igUrl, youtubeUrl, tiktokUrl].filter(Boolean);
+    if (perfis.length) ld.sameAs = perfis;
+    if (pagamento.length) ld.paymentAccepted = listaPt(pagamento);
+    document.head.append(el('script', { type: 'application/ld+json' }, JSON.stringify(ld)));
+  };
+
+  /* ---------- Perguntas frequentes ---------- */
+
+  const montarDuvidas = (c) => {
+    const faq = $('[data-faq]');
+    if (!faq) return;
     const pergunta = (titulo, montar) => {
       const d = el('details', { class: 'faq-item' });
       const r = el('div', { class: 'faq-resposta' });
@@ -202,6 +412,15 @@
       d.append(el('summary', {}, titulo), r);
       return d;
     };
+    const perguntas = pegar(c, 'duvidas.perguntas');
+    if (Array.isArray(perguntas)) {
+      faq.textContent = '';
+      perguntas.filter((q) => q && texto(q.pergunta)).forEach((q) => {
+        faq.append(pergunta(texto(q.pergunta), (r) => blocos(r, q.resposta)));
+      });
+    }
+
+    // Perguntas que dependem dos dados entram na mesma ordem da referência
     const antes = [];
     if (address) {
       antes.push(pergunta('Onde fica o salão?', (r) => {
@@ -214,7 +433,8 @@
       antes.push(pergunta('Qual é o horário de atendimento?', (r) => {
         const ul = el('ul');
         hours.forEach((h) => ul.append(el('li', {}, h)));
-        r.append(ul, el('p', {}, 'O atendimento é somente com horário agendado.'));
+        r.append(ul);
+        if (avisoAgendamento) r.append(el('p', {}, avisoAgendamento.replace(/[.!]*$/, '.')));
       }));
     }
     faq.prepend(...antes);
@@ -237,92 +457,33 @@
     // A primeira pergunta já vem aberta, como na referência
     const primeira = $('.faq-item', faq);
     if (primeira) primeira.open = true;
-  }
+    else $('#duvidas').hidden = true;
 
-  // Rodapé: onde estamos e botões
-  const onde = $('[data-rodape-onde]');
-  if (onde && (address || waDigits)) {
-    if (address) {
-      // quebra a linha antes da cidade: rua e bairro em cima, cidade e CEP embaixo
-      const p = $('[data-rodape-endereco]', onde);
-      const nomeCidade = cidade.split(/\s*[·,]\s*/)[0];
-      const corte = nomeCidade ? address.indexOf(nomeCidade) : -1;
-      const linhas = el('span', { class: 'rodape-onde-texto' });
-      if (corte > 0) linhas.append(el('span', {}, address.slice(0, corte).replace(/[\s,-]+$/, '')), el('span', {}, address.slice(corte)));
-      else linhas.append(el('span', {}, address));
-      p.append(icone('icon-pin'), linhas);
-      p.hidden = false;
-    }
-    if (waDigits) {
-      const t = $('[data-rodape-telefone]', onde);
-      t.href = waUrl();
-      t.target = '_blank';
-      t.rel = 'noopener';
-      t.setAttribute('aria-label', 'WhatsApp ' + telefone(waDigits));
-      t.append(icone('icon-whatsapp'), el('span', {}, telefone(waDigits)));
-      t.hidden = false;
-    }
-    onde.hidden = false;
-  }
-  const pilulas = $('[data-rodape-botoes]');
-  if (pilulas) {
-    const pilula = (href, iconeId, rotulo, escura) => {
-      const a = el('a', { class: 'pilula' + (escura ? ' pilula-escura' : ''), href, target: '_blank', rel: 'noopener' });
-      a.append(icone(iconeId), document.createTextNode(rotulo));
-      pilulas.append(a);
-    };
-    if (waDigits) {
-      pilula(waUrl(), 'icon-agenda', 'Agendar agora', true);
-      pilula(waUrl(), 'icon-whatsapp', 'WhatsApp');
-    }
-    if (igUrl) pilula(igUrl, 'icon-instagram', 'Instagram');
-    if (googleUrl) pilula(googleUrl, 'icon-estrela', 'Me avalie');
-    if (address) {
-      pilula(mapsUrl, 'icon-pin', 'Google Maps');
-      pilula(wazeUrl, 'icon-rota', 'Waze');
-    }
-    if (youtubeUrl) pilula(youtubeUrl, 'icon-youtube', 'YouTube');
-    if (tiktokUrl) pilula(tiktokUrl, 'icon-tiktok', 'TikTok');
-    pilulas.hidden = !pilulas.children.length;
-  }
-
-  /* ---------- Dados estruturados (Google) ---------- */
-
-  const abs = (path) => new URL(path, document.baseURI).href;
-  const ld = {
-    '@context': 'https://schema.org',
-    '@type': 'HairSalon',
-    name: 'Raquel Melo Conceito de Beleza',
-    description: 'Colorista de todas as cores: coloração, mechas, loiros, morena iluminada, cores fantasia e tratamentos capilares sob medida.',
-    url: abs('./'),
-    image: abs('assets/img/raquel-melo-retrato-1000.jpg'),
-    logo: abs('apple-touch-icon.png'),
+    // Abrir e fechar com suavidade
+    $$('.faq-item', faq).forEach((d) => {
+      const resumo = $('summary', d);
+      const resposta = $('.faq-resposta', d);
+      resumo.addEventListener('click', (e) => {
+        if (reduceMotion.matches || !resposta.animate) return;
+        e.preventDefault();
+        if (d.classList.contains('is-fechando')) return;
+        if (d.open) {
+          d.classList.add('is-fechando');
+          const anim = resposta.animate(
+            [{ height: resposta.offsetHeight + 'px', opacity: 1 }, { height: '0px', opacity: 0 }],
+            { duration: 300, easing: 'cubic-bezier(.4, 0, .2, 1)' },
+          );
+          anim.onfinish = () => { d.open = false; d.classList.remove('is-fechando'); };
+        } else {
+          d.open = true;
+          resposta.animate(
+            [{ height: '0px', opacity: 0 }, { height: resposta.offsetHeight + 'px', opacity: 1 }],
+            { duration: 380, easing: 'cubic-bezier(.16, .84, .24, 1)' },
+          );
+        }
+      });
+    });
   };
-  if (waDigits) ld.telephone = '+' + waDigits;
-  if (address) {
-    ld.address = { '@type': 'PostalAddress', streetAddress: address, addressCountry: 'BR' };
-    const [localidade, estado] = cidade.split(/\s*[·,-]\s*/);
-    if (localidade) ld.address.addressLocality = localidade;
-    if (estado) ld.address.addressRegion = estado;
-    const cep = address.match(/\b\d{5}-?\d{3}\b/);
-    if (cep) ld.address.postalCode = cep[0];
-  }
-  // Horários no formato do Google ("Terça-feira: 09:00 – 18:00")
-  const NOMES_DIAS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const hora = (h, m) => String(h).padStart(2, '0') + ':' + String(m || 0).padStart(2, '0');
-  const horarioLd = hours.map((linha) => {
-    const i = linha.indexOf(':');
-    if (i <= 0) return null;
-    const faixa = linha.slice(i + 1).match(/(\d{1,2})\s*[:h]?\s*(\d{2})?\s*(?:–|-|às|a)\s*(\d{1,2})\s*[:h]?\s*(\d{2})?/i);
-    const dias = diasDoTexto(linha.slice(0, i));
-    if (!faixa || !dias.length) return null;
-    return { '@type': 'OpeningHoursSpecification', dayOfWeek: dias.map((d) => NOMES_DIAS[d]), opens: hora(faixa[1], faixa[2]), closes: hora(faixa[3], faixa[4]) };
-  }).filter(Boolean);
-  if (horarioLd.length) ld.openingHoursSpecification = horarioLd;
-  const perfis = [igUrl, youtubeUrl, tiktokUrl].filter(Boolean);
-  if (perfis.length) ld.sameAs = perfis;
-  if (pagamento.length) ld.paymentAccepted = listaPt(pagamento);
-  document.head.append(el('script', { type: 'application/ld+json' }, JSON.stringify(ld)));
 
   /* ---------- Menu do celular ---------- */
 
@@ -370,9 +531,18 @@
     $$('main > section[id]').forEach((s) => espiao.observe(s));
   }
 
-  /* ---------- Fitas: o conteúdo é duplicado para rolar sem emenda ---------- */
+  /* ---------- Fitas: o conteúdo é repetido para rolar sem emenda ---------- */
 
-  $$('.fita-trilho').forEach((t) => { t.innerHTML += t.innerHTML; });
+  const encherFitas = () => {
+    $$('.fita-trilho').forEach((t) => {
+      const itens = Array.from(t.children);
+      if (!itens.length) return;
+      // com poucos itens, repete até cobrir telas largas; depois duplica (a animação anda 50%)
+      const letras = itens.reduce((n, i) => n + i.textContent.length + 6, 0);
+      for (let k = 1; k < Math.ceil(120 / letras); k++) itens.forEach((i) => t.append(i.cloneNode(true)));
+      t.innerHTML += t.innerHTML;
+    });
+  };
 
   /* ---------- Carrosséis (arrastar, setas e teclado) ---------- */
 
@@ -443,12 +613,11 @@
       }, true);
     }
   };
-  $$('[data-carrossel]').forEach(iniciarCarrossel);
 
   /* ---------- Vídeos: toca sem som quando aparece na tela ---------- */
 
-  const videos = $$('[data-video]');
-  if (videos.length) {
+  const iniciarVideos = (videos) => {
+    if (!videos.length) return;
     const visiveis = new Set();
     let controleManual = false; // depois que a pessoa toca no play, ela decide
 
@@ -503,33 +672,7 @@
       }, { threshold: 0.6 });
       videos.forEach((v) => { perto.observe(v); naTela.observe(v); });
     }
-  }
-
-  /* ---------- Perguntas: abrir e fechar com suavidade ---------- */
-
-  $$('.faq-item').forEach((d) => {
-    const resumo = $('summary', d);
-    const resposta = $('.faq-resposta', d);
-    resumo.addEventListener('click', (e) => {
-      if (reduceMotion.matches || !resposta.animate) return;
-      e.preventDefault();
-      if (d.classList.contains('is-fechando')) return;
-      if (d.open) {
-        d.classList.add('is-fechando');
-        const anim = resposta.animate(
-          [{ height: resposta.offsetHeight + 'px', opacity: 1 }, { height: '0px', opacity: 0 }],
-          { duration: 300, easing: 'cubic-bezier(.4, 0, .2, 1)' },
-        );
-        anim.onfinish = () => { d.open = false; d.classList.remove('is-fechando'); };
-      } else {
-        d.open = true;
-        resposta.animate(
-          [{ height: '0px', opacity: 0 }, { height: resposta.offsetHeight + 'px', opacity: 1 }],
-          { duration: 380, easing: 'cubic-bezier(.16, .84, .24, 1)' },
-        );
-      }
-    });
-  });
+  };
 
   /* ---------- Botão flutuante: aparece depois do botão do topo ---------- */
 
@@ -601,13 +744,15 @@
       p.style.removeProperty('--ry');
     });
   };
-  $$('.polaroid').forEach(inclinar);
 
   /* ---------- Fotos: vêm de assets/data/fotos.json (o painel da Raquel edita esse arquivo) ----------
      Sem foto, sem card: espaço vazio some e o resto da página se ajusta. */
 
   const TIPOS = { avif: 'image/avif', webp: 'image/webp', jpg: 'image/jpeg' };
-  const LIMITES = { topo: 1, sobre: 3, galeria: 15, produtos: 1, rodape: 3 };
+  const LIMITES = { topo: 1, sobre: 3, galeria: 15, produtos: 1, rodape: 3, videos: 6 };
+  const videoValido = (v) => !!v && typeof v.video === 'string' &&
+    /^assets\/(video|fotos)\/[a-z0-9][a-z0-9-]*\.mp4$/.test(v.video) &&
+    (!v.capa || (typeof v.capa === 'string' && /^assets\/(img|video|fotos)\/[a-z0-9][a-z0-9-]*\.jpg$/.test(v.capa)));
   const fotoValida = (f) => !!f && typeof f.arquivo === 'string' &&
     /^assets\/(img|fotos)\/[a-z0-9][a-z0-9-]*$/.test(f.arquivo) &&
     Array.isArray(f.larguras) && f.larguras.length > 0 &&
@@ -741,6 +886,36 @@
       caixaSobre.append(fig);
     });
 
+    // Vídeos (em pé, formato dos reels); sem vídeo, a seção sai
+    const secVideos = $('#videos');
+    if (secVideos && !secVideos.hidden) {
+      const trilhoVideos = $('[data-videos]', secVideos);
+      const modeloVideo = $('#modelo-video');
+      const listaVideos = (Array.isArray(d.videos) ? d.videos : []).filter(videoValido).slice(0, LIMITES.videos);
+      listaVideos.forEach((v) => {
+        const fig = modeloVideo.content.firstElementChild.cloneNode(true);
+        const video = $('video', fig);
+        if (v.capa) video.poster = v.capa;
+        if (Number(v.largura) > 0 && Number(v.altura) > 0) {
+          video.width = Math.round(v.largura);
+          video.height = Math.round(v.altura);
+        }
+        video.setAttribute('aria-label', 'Vídeo: ' + (texto(v.descricao) || texto(v.legenda) || 'trabalho no salão'));
+        video.append(el('source', { src: v.video, type: 'video/mp4' }));
+        const legenda = $('figcaption', fig);
+        legenda.textContent = texto(v.legenda);
+        legenda.hidden = !texto(v.legenda);
+        trilhoVideos.append(fig);
+      });
+      if (listaVideos.length) {
+        iniciarCarrossel($('[data-carrossel]', secVideos));
+        iniciarVideos($$('[data-video]', secVideos));
+        $$('.polaroid', secVideos).forEach(inclinar);
+      } else {
+        secVideos.hidden = true;
+      }
+    }
+
     // Galerias: só entram as que têm foto
     const modelo = $('#modelo-galeria');
     // as galerias entram antes do bloco dos produtos (ou dos vídeos)
@@ -748,6 +923,10 @@
     const galerias = (Array.isArray(d.galerias) ? d.galerias : [])
       .map((g) => ({ g, fotos: fotosDe(g && g.fotos, LIMITES.galeria) }))
       .filter((x) => x.fotos.length);
+    // cores alternadas, contando de trás para frente: a última galeria contrasta com a seção
+    // seguinte (produtos em champanhe → galeria clara; vídeos claros → galeria champanhe)
+    const seguinte = [$('#produtos'), $('#videos')].find((x) => x && !x.hidden);
+    const deslocamento = seguinte && seguinte.id === 'videos' ? 1 : 0;
     const usados = new Set();
     galerias.forEach(({ g, fotos }, i) => {
       const sec = modelo.content.firstElementChild.cloneNode(true);
@@ -755,9 +934,7 @@
       while (usados.has(id) || (i > 0 && document.getElementById(id))) id += '-' + i;
       usados.add(id);
       sec.id = id;
-      // cores alternadas, contando de trás para frente: a última galeria é clara e contrasta com
-      // os produtos (champanhe), que contrastam com os vídeos (claros)
-      sec.classList.add((galerias.length - 1 - i) % 2 === 0 ? 'galeria-clara' : 'galeria-champanhe');
+      sec.classList.add((galerias.length - 1 - i + deslocamento) % 2 === 0 ? 'galeria-clara' : 'galeria-champanhe');
 
       const nome = [texto(g.script), texto(g.serif)].filter(Boolean).join(' ') || 'Resultados';
       const titulo = $('.titulo-misto', sec);
@@ -819,9 +996,31 @@
     aoRolar();
   };
 
-  Promise.resolve(window.__fotos || fetch('assets/data/fotos.json', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)))
-    .catch(() => null)
-    .then(montarSite);
+  // Seção escondida pelo painel (ou sem conteúdo) sai também dos menus
+  const esconderLinks = () => {
+    ['produtos', 'videos', 'duvidas'].forEach((id) => {
+      const sec = document.getElementById(id);
+      if (sec && sec.hidden) $$(`a[href="#${id}"]`).forEach((a) => { (a.closest('li') || a).hidden = true; });
+    });
+  };
+
+  /* ---------- Montagem: textos e contato (conteudo.json), fotos e vídeos (fotos.json) ---------- */
+
+  const seguro = (fn) => { try { fn(); } catch (e) { console.error(e); } };
+  const carregar = (promessa, caminho) => Promise.resolve(promessa ||
+    fetch(caminho, { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null))).catch(() => null);
+
+  Promise.all([carregar(window.__conteudo, 'assets/data/conteudo.json'), carregar(window.__fotos, 'assets/data/fotos.json')])
+    .then(([conteudo, fotos]) => {
+      const c = conteudo && typeof conteudo === 'object' ? conteudo : {};
+      seguro(() => aplicarTextos(c));
+      seguro(() => aplicarContato(c.contato && typeof c.contato === 'object' ? c.contato : {}));
+      seguro(() => montarDuvidas(c));
+      seguro(encherFitas);
+      seguro(() => montarSite(fotos));
+      seguro(esconderLinks);
+    })
+    .finally(() => html.classList.remove('esperando'));
 
   /* ---------- Selo do topo: dá para girar com o mouse ---------- */
 

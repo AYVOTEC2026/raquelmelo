@@ -17,21 +17,26 @@ Site institucional de uma página, estático (HTML, CSS e JavaScript puros), pub
 9. **Rodapé:** onde estamos, botões, menu e marca-d'água com o nome.
 10. **Botão flutuante do WhatsApp**, que aparece depois do botão do topo.
 
-## Painel de fotos da Raquel
+## Painel do site da Raquel
 
 Endereço: https://ayvotec2026.github.io/raquelmelo/admin/ (não aparece no site nem no Google).
 
-Com a senha, a Raquel:
+Com a senha, a Raquel mexe no site inteiro pelo celular, em quatro abas:
 
-- adiciona fotos (até 15 por galeria; 1 no topo; 3 no "Sobre"; 1 na foto dos produtos; 3 no rodapé);
-- troca uma foto por outra, muda a ordem, leva a foto para outro lugar do site ou remove;
-- escreve a legenda e marca se a foto é uma montagem de antes e depois (aparecem as etiquetas "Antes" e "Depois");
-- cria até 4 galerias, muda os textos de cada uma, sobe, desce ou exclui;
-- toca em **Publicar no site**: tudo vai num único envio e o site se atualiza em 1 a 5 minutos.
+- **Fotos:** adiciona fotos (até 15 por galeria; 1 no topo; 3 no "Sobre"; 1 na foto dos produtos; 3 no rodapé), troca, muda a ordem, leva para outro lugar do site ou remove; escreve a legenda e marca se é uma montagem de antes e depois. Cria até 4 galerias, muda os textos de cada uma, sobe, desce ou exclui. Também adiciona vídeos (até 6), muda a legenda e a ordem ou remove.
+- **Textos:** topo, fitas com os serviços, "Sobre a Raquel", produtos (com a lista de produtos), vídeos, aviso de horário agendado e rodapé. Pode esconder as fitas, os produtos ou os vídeos.
+- **Dúvidas:** adiciona, edita, reordena e remove as perguntas frequentes (ou esconde a seção).
+- **Contato:** WhatsApp, mensagem pronta, Instagram, TikTok, YouTube, cidade, endereço, link do Maps, horários (um dia por linha), formas de pagamento e avaliações do Google.
 
-O site se ajusta sozinho: espaço sem foto não aparece (galeria vazia some, o topo fica só com o texto, o "Sobre" e o rodapé se reorganizam), então nunca fica um card em branco.
+Tudo vai num único envio ao tocar em **Publicar no site**, e o site se atualiza em 1 a 5 minutos. Um pontinho dourado na aba mostra o que ainda não foi publicado; **Desfazer** volta tudo para a última versão publicada. Antes de publicar, o painel confere o WhatsApp, os links (precisam começar com `https://`) e a nota do Google.
+
+Nos textos, `**palavra**` vira negrito; nas perguntas e no "Sobre", cada linha vira um parágrafo e linhas que começam com `-` viram lista. O site mostra tudo como texto puro (não aceita HTML).
+
+O site se ajusta sozinho: espaço sem foto não aparece (galeria vazia some, o topo fica só com o texto, o "Sobre" e o rodapé se reorganizam), campo de texto vazio some, e seção escondida sai também do menu. Nunca fica um card em branco.
 
 As fotos são reduzidas no próprio celular (600 e 1200 px, JPEG), o que deixa o site leve e apaga dados escondidos da foto, como a localização. Fotos do iPhone funcionam normalmente: ao escolher a foto pelo celular, o iPhone já entrega em JPEG.
+
+Os vídeos vão como estão: MP4 em H.264, até 30 MB (o reel salvo do Instagram já vem assim). O painel tira a capa do próprio vídeo. Vídeos gravados no iPhone em HEVC são recusados com a instrução para trocar a câmera para "Mais compatível", porque HEVC não toca em todo celular.
 
 ### Configurar o acesso (uma vez, pelo Italo)
 
@@ -43,25 +48,32 @@ O site é estático, então o painel publica pelo próprio GitHub, com um token 
 
 O token fica salvo em `admin/acesso.json` cifrado com a senha (AES-GCM com chave derivada por PBKDF2, 600 mil iterações); sem a senha ele não serve. Quando o token vencer, o painel avisa: gere outro e repita o passo 3. A Raquel pode trocar a senha pelo próprio painel.
 
-## Editar os dados do salão
+## Onde ficam os dados
 
-Tudo fica em [`assets/js/config.js`](assets/js/config.js). Campo vazio = item escondido no site.
+| Arquivo | O que tem |
+| --- | --- |
+| [`assets/data/conteudo.json`](assets/data/conteudo.json) | Textos de cada seção, fitas, produtos, perguntas frequentes, contato e horários. |
+| [`assets/data/fotos.json`](assets/data/fotos.json) | Fotos (topo, "Sobre", galerias com seus textos, produtos, rodapé) e vídeos. |
+
+O painel edita os dois; dá para editar à mão também. O `main.js` lê os arquivos e monta as seções. Os textos que estão no `index.html` são só a reserva, caso o `conteudo.json` não carregue: o que vale é o arquivo. Campo vazio (`""`) esconde o item no site; campo que não existe no arquivo deixa o texto do HTML.
+
+Contato (`"contato"` no `conteudo.json`):
 
 | Campo | O que faz no site |
 | --- | --- |
-| `whatsapp` | DDI 55 + DDD + número, só dígitos (ex.: `5527999998888`). Todos os botões "Agendar" abrem a conversa com uma mensagem pronta. Sem ele, os botões levam até "Horários e como chegar". |
+| `whatsapp` | DDI 55 + DDD + número, só dígitos (ex.: `5585987261704`). Todos os botões "Agendar" abrem a conversa com uma mensagem pronta. Sem ele, os botões levam até "Horários e como chegar". |
 | `mensagemPadrao` | Mensagem que já vem escrita ao abrir o WhatsApp. |
 | `instagram` | Usuário sem `@`. Aparece no cabeçalho, nos atalhos e no rodapé. |
-| `cidade` | Ex.: `"Vitória · ES"`. Aparece no topo da página e no cabeçalho (computador). |
+| `cidade` | Ex.: `"Fortaleza · CE"`. Aparece no topo da página e no cabeçalho (computador). |
 | `endereco` | Endereço completo. Mostra o endereço, o mapa do Google e os botões Google Maps, Waze e Uber. |
 | `mapsUrl` | Link do Google Maps (opcional). Se ficar vazio, é criado a partir do endereço. |
-| `horarios` | Uma linha por item, no formato `"Dia: horário"`. Vira uma tabela com o dia de hoje em destaque; "fechado" fica em cinza. |
+| `horarios` | Lista de `{ "dia": "Terça-feira", "horario": "09:00 – 18:00" }`. Vira uma tabela com o dia de hoje em destaque; "fechado" fica em cinza. |
 | `pagamento` | Lista de formas de pagamento. |
 | `google` | Link do perfil no Google. Cria o botão "Me avalie". |
 | `notaGoogle` | Nota no Google (ex.: `"5,0"`). Mostra o selo sobre a foto do topo. |
 | `youtube`, `tiktok` | Opcionais: link do canal e usuário do TikTok. Criam os botões correspondentes. |
 
-Com os dados preenchidos, as perguntas "Onde fica o salão?", "Qual é o horário de atendimento?", "Quais formas de pagamento são aceitas?" e "Onde vejo as avaliações de quem já foi?" entram sozinhas nas perguntas frequentes, como na referência.
+Links (`mapsUrl`, `google`, `youtube`) só valem se começarem com `https://`. Com os dados preenchidos, as perguntas "Onde fica o salão?", "Qual é o horário de atendimento?", "Quais formas de pagamento são aceitas?" e "Onde vejo as avaliações de quem já foi?" entram sozinhas nas perguntas frequentes, como na referência.
 
 ## Publicar uma alteração
 
@@ -73,22 +85,15 @@ git commit -m "Atualiza contatos"
 git push
 ```
 
-O GitHub Pages guarda os arquivos no navegador por até 10 minutos. Ao mudar `style.css`, `main.js` ou `config.js`, troque o número `?v=` nas linhas que carregam esses arquivos no `index.html` (e no `404.html` e no `admin/index.html`, se for o caso): assim ninguém vê a página nova com o visual antigo. As fotos do painel não precisam disso.
+O GitHub Pages guarda os arquivos no navegador por até 10 minutos. Ao mudar `style.css` ou `main.js` (ou os arquivos do painel), troque o número `?v=` nas linhas que carregam esses arquivos no `index.html` (e no `404.html` e no `admin/index.html`, se for o caso): assim ninguém vê a página nova com o visual antigo. O que o painel publica (fotos, vídeos e os arquivos `.json`) não precisa disso.
 
-## Incluir vídeos
+## Vídeos
 
-Os vídeos originais do celular são grandes demais para o site. Cada vídeo novo é convertido para MP4 (H.264, 720 × 1280, cerca de 2 Mbps) e ganha uma capa em JPEG do mesmo tamanho. Depois:
+O jeito mais fácil é pelo painel (aba Fotos › Vídeos). Para incluir à mão um vídeo grande ou gravado em HEVC, converta para MP4 (H.264, 720 × 1280, cerca de 2 Mbps, sem áudio) com uma capa em JPEG do mesmo tamanho, coloque os dois em `assets/video/` e acrescente um item em `"videos"` no `fotos.json` (`video`, `capa`, `largura`, `altura`, `legenda`, `descricao`).
 
-1. Coloque o `.mp4` em `assets/video/` e a capa em `assets/img/`.
-2. No `index.html`, na seção "Vídeos do salão", copie um `<figure class="polaroid polaroid-video">` e troque o arquivo, a capa, o `aria-label` e a legenda.
+Com um vídeo, ele fica centralizado. No computador, até três vídeos ficam lado a lado; no celular (ou com mais vídeos), eles viram um carrossel para deslizar. Só um vídeo toca por vez, sem som; quem quiser, toca no botão para pausar ou continuar. Sem vídeo, a seção sai do site e do menu.
 
-Com um vídeo, ele fica centralizado. No computador, até três vídeos ficam lado a lado; no celular (ou com mais vídeos), eles viram um carrossel para deslizar. Só um vídeo toca por vez, sem som; quem quiser, toca no botão para pausar ou continuar.
-
-Músicas de reels do Instagram costumam ser licenciadas só para o Instagram, por isso os vídeos entram sem som. Se a Raquel tiver um vídeo com áudio próprio (narração, por exemplo), dá para manter o som com um botão de ativar.
-
-## Onde ficam as fotos
-
-Todas as fotos do site estão listadas em [`assets/data/fotos.json`](assets/data/fotos.json), que o painel edita: topo, "Sobre", galerias (com título, subtítulo e texto) e rodapé. O `main.js` lê esse arquivo e monta as seções. As fotos enviadas pelo painel ficam em `assets/fotos/`; as fotos originais da Raquel, em `midia/` (fora do repositório).
+Músicas de reels do Instagram costumam ser licenciadas só para o Instagram, por isso os vídeos tocam sem som no site.
 
 ## Pronto para celular
 
@@ -107,13 +112,13 @@ index.html                    página única (textos e seções)
 manifest.webmanifest          instalação na tela inicial
 assets/css/style.css          visual (cores e fontes no topo do arquivo)
 assets/fonts/                 Cormorant Garamond, Great Vibes e Montserrat, no próprio site
-assets/js/config.js           dados do salão
-assets/js/main.js             contatos, fotos e galerias, menu, carrosséis, vídeos, perguntas e animações
-assets/data/fotos.json        lista das fotos do site (editada pelo painel)
+assets/js/main.js             monta textos, contato, fotos, galerias e vídeos; menu, carrosséis, perguntas e animações
+assets/data/conteudo.json     textos, perguntas frequentes, contato e horários (editado pelo painel)
+assets/data/fotos.json        fotos e vídeos do site (editado pelo painel)
 assets/fotos/                 fotos de resultados (antes e depois) e fotos enviadas pelo painel
-admin/                        painel de fotos da Raquel (index.html, admin.js, admin.css e acesso.json)
+admin/                        painel do site da Raquel (index.html, admin.js, conteudo.js, admin.css e acesso.json)
 assets/img/                   fotos (AVIF, WebP e JPEG em vários tamanhos) e logos em SVG
-assets/video/                 vídeos (H.264, sem áudio)
+assets/video/                 vídeos (H.264) e capas dos vídeos enviados pelo painel
 og-image.jpg                  imagem que aparece ao compartilhar o link
 ```
 
