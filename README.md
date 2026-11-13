@@ -42,8 +42,8 @@ Os vídeos vão como estão: MP4 em H.264, até 30 MB (o reel salvo do Instagram
 
 O site é estático, então o painel publica pelo próprio GitHub, com um token só deste repositório:
 
-1. No GitHub da conta AYVOTEC2026: *Settings › Developer settings › Fine-grained tokens › Generate new token*.
-2. Validade de 1 ano; *Repository access › Only select repositories › raquelmelo*; em *Repository permissions*, **Contents: Read and write** (nada mais).
+1. Logado no GitHub da conta AYVOTEC2026, abra [este link já preenchido](https://github.com/settings/personal-access-tokens/new?name=Painel+do+site+Raquel&description=Painel+do+site+da+Raquel+Melo+%28raquelmelo%2Fadmin%29&expires_in=366&contents=write) (nome, validade de 1 ano e **Contents: Read and write**, nada mais). O mesmo link está no painel, em "Configurar o acesso".
+2. Em *Repository access*, escolha *Only select repositories* e marque **raquelmelo** (o GitHub não deixa o link escolher o repositório). Toque em *Generate token* e copie.
 3. Abra o painel, toque em "Configurar o acesso", cole o token e gere a senha da Raquel. Envie para ela o endereço do painel e a senha.
 
 O token fica salvo em `admin/acesso.json` cifrado com a senha (AES-GCM com chave derivada por PBKDF2, 600 mil iterações); sem a senha ele não serve. Quando o token vencer, o painel avisa: gere outro e repita o passo 3. A Raquel pode trocar a senha pelo próprio painel.
