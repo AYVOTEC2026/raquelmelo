@@ -1022,55 +1022,5 @@
     })
     .finally(() => html.classList.remove('esperando'));
 
-  /* ---------- Selo do topo: dá para girar com o mouse ---------- */
-
-  const selo = $('[data-selo]');
-  if (selo && motion && mouseFino) {
-    const anel = $('.selo-anel', selo);
-    let angulo = 0;
-    let velocidade = 0;
-    let ultimo = 0;
-    let girando = false;
-    let laco = 0;
-    const anguloDe = (e) => {
-      const r = selo.getBoundingClientRect();
-      return Math.atan2(e.clientY - (r.top + r.height / 2), e.clientX - (r.left + r.width / 2)) * 180 / Math.PI;
-    };
-    selo.classList.add('is-giravel');
-    selo.addEventListener('pointerdown', (e) => {
-      if (e.pointerType !== 'mouse' || e.button !== 0) return;
-      cancelAnimationFrame(laco);
-      girando = true;
-      ultimo = anguloDe(e);
-      selo.setPointerCapture(e.pointerId);
-      selo.classList.add('is-girando');
-    });
-    selo.addEventListener('pointermove', (e) => {
-      if (!girando) return;
-      const a = anguloDe(e);
-      let d = a - ultimo;
-      if (d > 180) d -= 360;
-      if (d < -180) d += 360;
-      ultimo = a;
-      angulo += d;
-      velocidade = d;
-      anel.style.rotate = angulo.toFixed(1) + 'deg';
-    });
-    const soltar = () => {
-      if (!girando) return;
-      girando = false;
-      selo.classList.remove('is-girando');
-      const inercia = () => {
-        velocidade *= 0.95;
-        angulo += velocidade;
-        anel.style.rotate = angulo.toFixed(1) + 'deg';
-        if (Math.abs(velocidade) > 0.05) laco = requestAnimationFrame(inercia);
-      };
-      laco = requestAnimationFrame(inercia);
-    };
-    selo.addEventListener('pointerup', soltar);
-    selo.addEventListener('pointercancel', soltar);
-  }
-
   $$('[data-ano]').forEach((n) => { n.textContent = String(new Date().getFullYear()); });
 })();
